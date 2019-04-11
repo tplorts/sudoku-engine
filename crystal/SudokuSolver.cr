@@ -1,6 +1,6 @@
 require "./SudokuState"
 
-VALIDATION_ENABLED = true
+VALIDATION_ENABLED = false
 
 class SudokuSolver
   protected property sudoku : SudokuState
@@ -32,27 +32,24 @@ class SudokuSolver
 
   def solve
     iterations = 0
+    placements_made = nil
 
-    until complete?
+    until complete? || placements_made == 0
       initial_empty_count = empty_count
 
-      fill_determined_cells
+      exhaustively_fill_determined_cells
+
+      placements_made = initial_empty_count - empty_count
 
       validate
 
-      break if empty_count == 0
-
-      (1..N).each do |n|
-        place_throughout(n)
-        break if empty_count == 0
-      end
+      # break if empty_count == 0
+      # (1..N).each do |n|
+      #   place_throughout(n)
+      #   break if empty_count == 0
+      # end
 
       iterations += 1
-
-      validate
-
-      # Terminate the loop if no placements were made during this iteration
-      break if empty_count == initial_empty_count
     end
 
     raise "Failed to solve" if empty_count > 0
@@ -62,15 +59,25 @@ class SudokuSolver
   # list of candidate values.  Places the value when the cell is fully
   # determined.  Stops repeating when no placements were made over the course
   # of a single iteration to check the entire sudoku.
-  def fill_determined_cells
-    initial_empty_count = nil
+  def exhaustively_fill_determined_cells
+    placements_made = nil
 
-    until complete? || empty_count == initial_empty_count
+    until complete? || placements_made == 0
       initial_empty_count = empty_count
 
-      @sudoku.each_cell_with_position do |cell, position|
-        @sudoku.place(cell.candidate, position) if cell.determined?
-      end
+      fill_determined_cells
+
+      placements_made = initial_empty_count - empty_count
+
+      puts "Filled #{placements_made} cells"
+      print_grid
+      validate
+    end
+  end
+
+  def fill_determined_cells
+    @sudoku.each_cell_with_position do |cell, position|
+      @sudoku.place(cell.candidate, position) if cell.determined?
     end
   end
 
