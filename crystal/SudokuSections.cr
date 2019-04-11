@@ -35,21 +35,19 @@ private abstract class Section
   end
 end
 
-class Row < Section
+private abstract class LinearSection < Section
   def initialize(@grid : SudokuGrid, @index : Int32)
     super(@grid)
   end
+end
 
+class Row < LinearSection
   def each_position
     (0...N).each { |column_index| yield ({@index, column_index}) }
   end
 end
 
-class Column < Section
-  def initialize(@grid : SudokuGrid, @index : Int32)
-    super(@grid)
-  end
-
+class Column < LinearSection
   def each_position
     (0...N).each { |row_index| yield ({row_index, @index}) }
   end
