@@ -35,7 +35,7 @@ class SudokuCell
   end
 
   def determined?
-    candidate_count == 1
+    unoccupied? && candidate_count == 1
   end
 
   private def candidate_count
