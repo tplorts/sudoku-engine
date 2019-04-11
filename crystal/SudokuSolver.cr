@@ -93,10 +93,11 @@ class SudokuSolver
     block.each_cell_with_position do |cell, position|
       # Skip checking whether the Block has value here since we
       # already did that above, before looping through each cell
-      obstructed? = cell.occupied? ||
-                    @sudoku.row(position).has?(value) ||
-                    @sudoku.column(position).has?(value)
-      candidates << position if !obstructed?
+      next if cell.occupied? ||
+              @sudoku.row(position).has?(value) ||
+              @sudoku.column(position).has?(value)
+
+      candidates << position
     end
 
     return candidates
