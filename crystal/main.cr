@@ -1,6 +1,6 @@
 require "./SudokuSolver"
 
-solver = SudokuSolver.new("../puzzles/20190220a.sudoku")
+solver = SudokuSolver.new("../puzzles/20190220a.sudoku", debug_output_enabled: true)
 
 puts "Before"
 solver.print_grid

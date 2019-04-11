@@ -1,17 +1,21 @@
 require "./SudokuState"
 
-VALIDATION_ENABLED = false
-
 class SudokuSolver
   protected property sudoku : SudokuState
 
-  def initialize(filename)
+  protected property debug_output_enabled : Bool
+  protected property validation_enabled : Bool
+
+  def initialize(filename, debug_output_enabled : Bool = false, validation_enabled : Bool = false)
+    @debug_output_enabled = debug_output_enabled
+    @validation_enabled = validation_enabled
+
     @sudoku = SudokuState.new
     @sudoku.load_from_file(filename)
   end
 
   def print_grid
-    puts @sudoku.to_s
+    puts @sudoku.to_s if @debug_output_enabled
   end
 
   def empty_count
@@ -27,7 +31,7 @@ class SudokuSolver
   end
 
   def validate
-    raise "SUDOKU INVALID" if VALIDATION_ENABLED && !valid?
+    raise "SUDOKU INVALID" if @validation_enabled && !valid?
   end
 
   def solve
@@ -69,7 +73,7 @@ class SudokuSolver
 
       placements_made = initial_empty_count - empty_count
 
-      puts "Filled #{placements_made} cells"
+      puts "Filled #{placements_made} cells" if @debug_output_enabled
       print_grid
       validate
     end
