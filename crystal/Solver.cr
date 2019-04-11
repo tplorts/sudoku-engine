@@ -1,7 +1,7 @@
-require "./SudokuState"
+require "./State"
 
-class SudokuSolver
-  protected property sudoku : SudokuState
+class Solver
+  protected property sudoku : State
 
   protected property debug_output_enabled : Bool
   protected property validation_enabled : Bool
@@ -10,7 +10,7 @@ class SudokuSolver
     @debug_output_enabled = debug_output_enabled
     @validation_enabled = validation_enabled
 
-    @sudoku = SudokuState.new
+    @sudoku = State.new
     @sudoku.load_from_file(filename)
   end
 

@@ -1,21 +1,21 @@
 require "file"
 require "bit_array"
 require "./core"
-require "./SudokuCell"
-require "./SudokuGrid"
-require "./SudokuSections"
+require "./Cell"
+require "./Grid"
+require "./Sections"
 
-class SudokuState
+class State
   getter empty_cell_count : Int32
 
-  protected property grid : SudokuGrid
+  protected property grid : Grid
 
   protected property rows : Array(Row)
   protected property columns : Array(Column)
   protected property blocks : Array(Array(Block))
 
   def initialize
-    @grid = SudokuGrid.new
+    @grid = Grid.new
 
     @empty_cell_count = N * N
 

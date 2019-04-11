@@ -1,11 +1,11 @@
 require "./core"
-require "./SudokuCell"
+require "./Cell"
 
-class SudokuGrid
-  protected property table : Array(Array(SudokuCell))
+class Grid
+  protected property table : Array(Array(Cell))
 
   def initialize
-    @table = Array.new(N) { |r| Array.new(N) { |c| SudokuCell.new } }
+    @table = Array.new(N) { |r| Array.new(N) { |c| Cell.new } }
   end
 
   def cell(position : Position)

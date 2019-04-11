@@ -1,8 +1,8 @@
 require "spec"
-require "../SudokuState"
+require "../State"
 
-describe SudokuState do
-  sudoku_a = SudokuState.new
+describe State do
+  sudoku_a = State.new
   sudoku_a.load_from_file("../puzzles/20190220a.sudoku")
 
   describe "row valid?" do

@@ -1,5 +1,5 @@
 require "spec"
-require "../SudokuState"
+require "../State"
 
 # Printed version of 20190220a for reference:
 #
@@ -31,9 +31,9 @@ def get_number_table(file_lines : Array(String))
   end
 end
 
-describe SudokuState do
+describe State do
   filename = "../puzzles/20190220a.sudoku"
-  sudoku_a = SudokuState.new
+  sudoku_a = State.new
   sudoku_a.load_from_file(filename)
   file_lines = File.read_lines(filename)
 

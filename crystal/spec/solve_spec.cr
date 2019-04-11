@@ -1,6 +1,6 @@
 require "dir"
-require "../SudokuState"
-require "../SudokuSolver"
+require "../State"
+require "../Solver"
 
 difficulties = {
   easy: "a",
@@ -8,12 +8,12 @@ difficulties = {
   # hard:   "c",
 }
 
-describe SudokuSolver do
+describe Solver do
   difficulties.each do |difficulty_name, filename_part|
     describe difficulty_name do
       Dir["../puzzles/*#{filename_part}.sudoku"].each do |filename|
         describe filename do
-          solver = SudokuSolver.new(filename)
+          solver = Solver.new(filename)
 
           initially_valid = solver.valid?
 

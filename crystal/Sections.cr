@@ -1,9 +1,9 @@
 require "bit_array"
 require "./core"
-require "./SudokuGrid"
+require "./Grid"
 
 private abstract class Section
-  def initialize(@grid : SudokuGrid)
+  def initialize(@grid : Grid)
     @has = BitArray.new(N + 1)
   end
 
@@ -36,7 +36,7 @@ private abstract class Section
 end
 
 private abstract class LinearSection < Section
-  def initialize(@grid : SudokuGrid, @index : Int32)
+  def initialize(@grid : Grid, @index : Int32)
     super(@grid)
   end
 end
@@ -61,7 +61,7 @@ class Block < Section
     (B * block_index)...(B * (block_index + 1))
   end
 
-  def initialize(@grid : SudokuGrid, block_row_index : Int, block_column_index : Int)
+  def initialize(@grid : Grid, block_row_index : Int, block_column_index : Int)
     super(@grid)
 
     @row_range = make_index_range(block_row_index)

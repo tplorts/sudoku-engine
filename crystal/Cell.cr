@@ -1,7 +1,7 @@
 require "bit_array"
 require "./core"
 
-class SudokuCell
+class Cell
   getter occupant : CellOccupant
   protected property candidates : BitArray
 
