@@ -2,6 +2,11 @@ require "bit_array"
 require "./core"
 require "./Grid"
 
+include Sudoku
+
+# TODO: figure out why putting the Section classes in the Sudoku module is
+# causing each_position to marked as unimplemented in Row.
+
 private abstract class Section
   def initialize(@grid : Grid)
     @has = BitArray.new(N + 1)
