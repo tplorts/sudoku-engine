@@ -6,8 +6,8 @@ require "../Solver"
 include Sudoku
 
 difficulties = {
-  easy: "a",
-  # medium: "b",
+  easy:   "a",
+  medium: "b",
   # hard:   "c",
 }
 
