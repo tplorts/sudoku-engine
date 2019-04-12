@@ -17,15 +17,15 @@ private:
   void fill_determined_cells();
 
 public:
-  Solver(const std::string &filename) { sudoku.load_from_file(filename); }
+  Solver(const std::string& filename) { sudoku.load_from_file(filename); }
   ~Solver() {}
 
   void solve();
 
-  friend std::ostream &operator<<(std::ostream &outs, const Solver &solver);
+  friend std::ostream& operator<<(std::ostream& outs, const Solver& solver);
 };
 
-inline std::ostream &operator<<(std::ostream &outs, const Solver &solver) {
+inline std::ostream& operator<<(std::ostream& outs, const Solver& solver) {
   return outs << solver.sudoku;
 }
 

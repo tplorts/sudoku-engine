@@ -19,7 +19,7 @@ public:
   int block_row() const { return row_index / B; }
   int block_column() const { return column_index / B; }
 
-  Position operator+(const Position &other) const {
+  Position operator+(const Position& other) const {
     return Position(row() + other.row(), column() + other.column());
   }
 };

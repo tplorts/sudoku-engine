@@ -40,7 +40,7 @@ public:
 
   cell_t first_candidate() const;
 
-  friend std::ostream &operator<<(std::ostream &outs, const Cell &cell) {
+  friend std::ostream& operator<<(std::ostream& outs, const Cell& cell) {
     return cell.occupied() ? (outs << cell.get_value()) : (outs << ' ');
   }
 };

@@ -9,22 +9,22 @@ namespace Sudoku {
 
 class SectionIterator {
 protected:
-  const Grid &grid;
+  const Grid& grid;
   int next_index;
 
 public:
-  SectionIterator(const Grid &grid) : grid(grid), next_index(0) {}
+  SectionIterator(const Grid& grid) : grid(grid), next_index(0) {}
 
   virtual ~SectionIterator(){};
 
-  virtual Cell &next() = 0;
+  virtual Cell& next() = 0;
 
   bool done() const { return next_index >= N; }
 };
 
 class Section {
 protected:
-  const Grid &grid;
+  const Grid& grid;
 
   /**
    * N + 1 bits so that we can reference each bit according to
@@ -33,12 +33,12 @@ protected:
   std::bitset<N + 1> has_map;
 
 public:
-  Section(const Grid &grid) : grid(grid) {}
+  Section(const Grid& grid) : grid(grid) {}
   ~Section() {}
 
   bool has(const cell_t value) const { return has_map[value]; };
 
-  virtual SectionIterator *get_iterator() = 0;
+  virtual SectionIterator* get_iterator() = 0;
 
   void place(const cell_t value);
 };

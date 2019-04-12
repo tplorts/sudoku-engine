@@ -16,33 +16,33 @@ private:
   Grid grid;
   int empty_cell_count;
 
-  Row *rows[N];
-  Column *columns[N];
-  Block *blocks[B][B];
+  Row* rows[N];
+  Column* columns[N];
+  Block* blocks[B][B];
 
 public:
   State();
   ~State();
 
-  void load_from_file(const std::string &filename);
+  void load_from_file(const std::string& filename);
 
-  Cell &get_cell(const Position &position) { return grid(position); }
+  Cell& get_cell(const Position& position) { return grid(position); }
 
   int get_empty_cell_count() const { return empty_cell_count; }
 
-  void place(cell_t value, const Position &position);
+  void place(cell_t value, const Position& position);
 
-  Row &row(const Position &position) { return *rows[position.row()]; }
+  Row& row(const Position& position) { return *rows[position.row()]; }
 
-  Column &column(const Position &position) {
+  Column& column(const Position& position) {
     return *columns[position.column()];
   }
 
-  Block &block(const Position &position) {
+  Block& block(const Position& position) {
     return *blocks[position.block_row()][position.block_column()];
   }
 
-  friend std::ostream &operator<<(std::ostream &outs, const State &sudoku) {
+  friend std::ostream& operator<<(std::ostream& outs, const State& sudoku) {
     return outs << sudoku.grid;
   }
 };
