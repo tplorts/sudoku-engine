@@ -1,6 +1,8 @@
 require "spec"
 require "../State"
 
+include Sudoku
+
 describe State do
   sudoku_a = State.new
   sudoku_a.load_from_file("../puzzles/20190220a.sudoku")

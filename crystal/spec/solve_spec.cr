@@ -2,6 +2,8 @@ require "dir"
 require "../State"
 require "../Solver"
 
+include Sudoku
+
 difficulties = {
   easy: "a",
   # medium: "b",

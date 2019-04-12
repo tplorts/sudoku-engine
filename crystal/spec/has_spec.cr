@@ -1,6 +1,8 @@
 require "spec"
 require "../State"
 
+include Sudoku
+
 # Printed version of 20190220a for reference:
 #
 # -------------------------------------
