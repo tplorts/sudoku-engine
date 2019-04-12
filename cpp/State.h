@@ -4,6 +4,7 @@
 #include "Block.h"
 #include "Column.h"
 #include "Grid.h"
+#include "Position.h"
 #include "Row.h"
 #include <iostream>
 #include <string>
@@ -25,20 +26,20 @@ public:
 
   void load_from_file(const std::string &filename);
 
-  Cell &get_cell(int row_index, int column_index) {
-    return grid(row_index, column_index);
-  }
+  Cell &get_cell(const Position &position) { return grid(position); }
 
   int get_empty_cell_count() const { return empty_cell_count; }
 
-  void place(cell_t value, int row_index, int column_index);
+  void place(cell_t value, const Position &position);
 
-  Row &row(int row_index) { return *rows[row_index]; }
+  Row &row(const Position &position) { return *rows[position.row()]; }
 
-  Column &column(int column_index) { return *columns[column_index]; }
+  Column &column(const Position &position) {
+    return *columns[position.column()];
+  }
 
-  Block &block(int row_index, int column_index) {
-    return *blocks[row_index / B][column_index / B];
+  Block &block(const Position &position) {
+    return *blocks[position.block_row()][position.block_column()];
   }
 
   friend std::ostream &operator<<(std::ostream &outs, const State &sudoku) {

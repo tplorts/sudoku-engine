@@ -1,6 +1,6 @@
 CXX=g++
 CXXFLAGS=-I.
-DEPS=common.h read_puzzle_file.h State.h Grid.h Cell.h Section.h Row.h Column.h Block.h
+DEPS=common.h read_puzzle_file.h State.h Grid.h Cell.h Section.h Row.h Column.h Block.h Position.h
 OBJ=Solver.o State.o Grid.o Cell.o Section.o read_puzzle_file.o
 
 debug: CXXFLAGS += -DDEBUG -g -O0

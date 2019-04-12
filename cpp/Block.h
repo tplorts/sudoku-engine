@@ -2,6 +2,7 @@
 #define _SUDOKU_BLOCK_H_
 
 #include "Cell.h"
+#include "Position.h"
 #include "Section.h"
 #include "common.h"
 
@@ -9,38 +10,31 @@ namespace Sudoku {
 
 class BlockIterator : public SectionIterator {
 private:
-  const int row_offset;
-  const int column_offset;
+  const Position &base;
+
+  Position next_subposition() {
+    const int index = next_index++;
+    return Position(index / B, index % B);
+  }
 
 public:
-  BlockIterator(const Grid &grid, int row_offset, int column_offset)
-      : SectionIterator(grid), row_offset(row_offset),
-        column_offset(column_offset) {}
+  BlockIterator(const Grid &grid, const Position &base)
+      : SectionIterator(grid), base(base) {}
 
-  Cell &next() {
-    const int subrow_index = next_index / B;
-    const int subcolumn_index = next_index % B;
-    next_index++;
-    return (Cell &)grid(row_offset + subrow_index,
-                        column_offset + subcolumn_index);
-  }
+  Cell &next() { return (Cell &)grid(base + next_subposition()); }
 };
 
 class Block : public Section {
 private:
-  const int row_offset;
-  const int column_offset;
+  const Position base;
 
 public:
   Block(const Grid &grid, int block_row_index, int block_column_index)
-      : Section(grid), row_offset(block_row_index * B),
-        column_offset(block_column_index * B) {}
+      : Section(grid), base(block_row_index * B, block_column_index * B) {}
 
   ~Block() {}
 
-  SectionIterator *get_iterator() {
-    return new BlockIterator(grid, row_offset, column_offset);
-  }
+  SectionIterator *get_iterator() { return new BlockIterator(grid, base); }
 };
 
 } // namespace Sudoku

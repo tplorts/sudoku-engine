@@ -1,19 +1,10 @@
 #include "Grid.h"
-#include "Cell.h"
 #include "common.h"
 #include <iostream>
 #include <string>
 
 using namespace std;
 using namespace Sudoku;
-
-Cell &Grid::operator()(int row_index, int column_index) {
-  return table[row_index][column_index];
-}
-
-const Cell &Grid::operator()(int row_index, int column_index) const {
-  return table[row_index][column_index];
-}
 
 ostream &operator<<(ostream &outs, const Grid &grid) {
   const string row_divider_line((N * 4) + 1, '-');
