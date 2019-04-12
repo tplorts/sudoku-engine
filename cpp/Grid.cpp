@@ -6,7 +6,7 @@
 using namespace std;
 using namespace Sudoku;
 
-ostream &operator<<(ostream &outs, const Grid &grid) {
+ostream& operator<<(ostream& outs, const Grid& grid) {
   const string row_divider_line((N * 4) + 1, '-');
 
   outs << row_divider_line << endl;

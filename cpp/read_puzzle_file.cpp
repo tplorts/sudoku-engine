@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void parse_line(const string &line, int numbers[]) {
+void parse_line(const string& line, int numbers[]) {
   if (!regex_match(line, regex("^[ 1-9]{9}$"))) {
     cerr << "Improper line from puzzle file: " << line << endl;
     exit(EXIT_FAILURE);
@@ -18,7 +18,7 @@ void parse_line(const string &line, int numbers[]) {
   }
 }
 
-void read_puzzle_file(const string &filename, int grid[N][N]) {
+void read_puzzle_file(const string& filename, int grid[N][N]) {
   ifstream puzzle_file;
   puzzle_file.open(filename);
 

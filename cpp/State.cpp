@@ -28,7 +28,7 @@ State::~State() {
   }
 }
 
-void State::load_from_file(const std::string &filename) {
+void State::load_from_file(const std::string& filename) {
   int raw_grid[N][N];
   read_puzzle_file(filename, raw_grid);
 
@@ -42,7 +42,7 @@ void State::load_from_file(const std::string &filename) {
   }
 }
 
-void State::place(cell_t value, const Position &position) {
+void State::place(cell_t value, const Position& position) {
   grid(position).place(value);
 
   row(position).place(value);

@@ -24,7 +24,7 @@ void Solver::fill_determined_cells() {
   for (int row_index = 0; row_index < N; row_index++) {
     for (int column_index = 0; column_index < N; column_index++) {
       Position position(row_index, column_index);
-      Cell &cell = sudoku.get_cell(position);
+      Cell& cell = sudoku.get_cell(position);
 
       if (cell.determined()) {
         sudoku.place(cell.first_candidate(), position);
