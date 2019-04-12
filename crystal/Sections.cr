@@ -34,7 +34,11 @@ private abstract class Section
   def valid?
     seen = BitArray.new(N + 1)
     each_cell do |cell|
-      return false if !(n = cell.occupant).nil? && seen[n]
+      value = cell.occupant
+      next if !value
+
+      return false if seen[value]
+      seen[value] = true
     end
     return true
   end
