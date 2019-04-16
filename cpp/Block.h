@@ -21,7 +21,7 @@ public:
   BlockIterator(const Grid& grid, const Position& base)
       : SectionIterator(grid), base(base) {}
 
-  Cell& next() { return (Cell&)grid(base + next_subposition()); }
+  Position next_position() { return base + next_subposition(); }
 };
 
 class Block : public Section {

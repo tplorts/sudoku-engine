@@ -3,6 +3,7 @@
 
 #include "Cell.h"
 #include "Grid.h"
+#include "Position.h"
 #include "common.h"
 
 namespace Sudoku {
@@ -17,7 +18,9 @@ public:
 
   virtual ~SectionIterator(){};
 
-  virtual Cell& next() = 0;
+  virtual Position next_position() = 0;
+
+  Cell& next() { return (Cell&)grid(next_position()); }
 
   bool done() const { return next_index >= N; }
 };

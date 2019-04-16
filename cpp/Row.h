@@ -2,6 +2,7 @@
 #define _SUDOKU_ROW_H_
 
 #include "Cell.h"
+#include "Position.h"
 #include "Section.h"
 #include "common.h"
 
@@ -15,7 +16,7 @@ public:
   RowIterator(const Grid& grid, int row_index)
       : SectionIterator(grid), row_index(row_index) {}
 
-  Cell& next() { return (Cell&)grid(row_index, next_index++); }
+  Position next_position() { return Position(row_index, next_index++); }
 };
 
 class Row : public Section {
