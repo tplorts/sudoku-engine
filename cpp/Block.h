@@ -34,7 +34,9 @@ public:
 
   ~Block() {}
 
-  SectionIterator* get_iterator() { return new BlockIterator(grid, base); }
+  SectionIterator* get_iterator() const {
+    return new BlockIterator(grid, base);
+  }
 };
 
 } // namespace Sudoku

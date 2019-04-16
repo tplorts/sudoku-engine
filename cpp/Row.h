@@ -27,7 +27,9 @@ public:
 
   ~Row() {}
 
-  SectionIterator* get_iterator() { return new RowIterator(grid, row_index); }
+  SectionIterator* get_iterator() const {
+    return new RowIterator(grid, row_index);
+  }
 };
 
 } // namespace Sudoku

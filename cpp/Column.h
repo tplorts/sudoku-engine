@@ -28,7 +28,7 @@ public:
 
   ~Column() {}
 
-  SectionIterator* get_iterator() {
+  SectionIterator* get_iterator() const {
     return new ColumnIterator(grid, column_index);
   }
 };

@@ -38,7 +38,7 @@ public:
 
   bool has(const cell_t value) const { return has_map[value]; };
 
-  virtual SectionIterator* get_iterator() = 0;
+  virtual SectionIterator* get_iterator() const = 0;
 
   void place(const cell_t value);
 };
