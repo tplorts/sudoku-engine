@@ -37,6 +37,18 @@ public:
   SectionIterator* get_iterator() const {
     return new BlockIterator(grid, base);
   }
+
+  bool includes_row(int row) const {
+    return base.row() <= row && row < (base.row() + B);
+  }
+
+  bool includes_column(int column) const {
+    return base.column() <= column && column < (base.column() + B);
+  }
+
+  bool includes(const Position& position) const {
+    return includes_row(position.row()) && includes_column(position.column());
+  }
 };
 
 } // namespace Sudoku

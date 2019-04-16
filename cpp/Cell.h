@@ -16,8 +16,6 @@ private:
   // Using N (not N+1) here so that .count() below is accurate
   std::bitset<N> candidates;
 
-  bool is_candidate(cell_t n) const { return candidates[n - 1]; }
-
 public:
   Cell() : value(0) {
     // Start an empty cell with all possible candidate values
@@ -29,6 +27,8 @@ public:
   cell_t get_value() const { return value; }
 
   bool occupied() const { return bool(value); }
+
+  bool is_candidate(cell_t n) const { return candidates[n - 1]; }
 
   void place(cell_t new_value);
 
