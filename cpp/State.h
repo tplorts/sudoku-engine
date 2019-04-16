@@ -38,6 +38,10 @@ public:
     return *columns[position.column()];
   }
 
+  Block& block(int block_row_index, int block_column_index) {
+    return *blocks[block_row_index][block_column_index];
+  }
+
   Block& block(const Position& position) {
     return *blocks[position.block_row()][position.block_column()];
   }
