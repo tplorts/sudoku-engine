@@ -1,4 +1,5 @@
 require "./State"
+require "./Sections"
 
 module Sudoku
   class Solver
@@ -47,7 +48,7 @@ module Sudoku
         initial_empty_count = empty_count
 
         solve_determined
-        eliminate_candidates_by_partially_determined unless complete?
+        eliminate_candidates_by_partial_determination unless complete?
 
         placements_made = initial_empty_count - empty_count
         debug "major iteration #{iterations}: #{placements_made} placements"
@@ -151,70 +152,68 @@ module Sudoku
       return candidates
     end
 
-    def eliminate_candidates_by_partially_determined
+    def eliminate_candidates_by_partial_determination
       @sudoku.each_block do |block|
         (1..N).each do |value|
-          # only consider values not yet placed in this block
-          next if block.has?(value)
+          determined_row_index, determined_column_index = find_determined_row_column_in_block(value, block)
 
-          candidate_rows = Set(Int32).new
-          candidate_columns = Set(Int32).new
-
-          # Find the set of rows/columns within this block which could contain
-          # value.
-          block.each_cell_with_position do |cell, (row_index, column_index)|
-            if cell.candidate?(value)
-              candidate_rows.add(row_index)
-              candidate_columns.add(column_index)
-            end
-          end
-
-          # And now, if there is only one row that could contain value in this
-          # block, then we can deduce that value cannot be placed in that row
-          # in the two blocks horizontally adjacent to this block.
-          # And likewise, for columns and vertically adjacent blocks.
-          row_determined = candidate_rows.size == 1
-          column_determined = candidate_columns.size == 1
-
-          determined_row_index = candidate_rows.to_a[0]
-          determined_column_index = candidate_columns.to_a[0]
-
-          if row_determined && column_determined
+          if determined_row_index && determined_column_index
             @sudoku.place(value, {determined_row_index, determined_column_index})
-            next # next value in this block
-          end
-
-          if row_determined
+          elsif determined_row_index
             row = @sudoku.row(determined_row_index)
-
             debug "Eliminating #{value} from row #{determined_row_index} except in columns #{block.column_range}"
-
-            # Since value will definitely go in this row within this block,
-            # the two horizontally adjacent blocks can eliminate value as a
-            # candidate from all of their cells in this row.
-            row.each_cell_with_position do |cell, (_, column_index)|
-              unless block.column_range.includes?(column_index)
-                debug "   > eliminate #{value} from (#{determined_row_index},#{column_index})" if cell.candidate?(value)
-              end
-              cell.eliminate_candidate(value) unless block.column_range.includes?(column_index)
-            end
-          end
-
-          if column_determined
+            eliminate_candidate_in_section_except_in_block(value, row, block)
+          elsif determined_column_index
             column = @sudoku.column(determined_column_index)
-
             debug "Eliminating #{value} from column #{determined_column_index} except in rows #{block.row_range}"
-
-            # Since value will definitely go in this column within this block,
-            # the two vertically adjacent blocks can eliminate value as a
-            # candidate from all of their cells in this column.
-            column.each_cell_with_position do |cell, (row_index)|
-              unless block.row_range.includes?(row_index)
-                debug "   > eliminate #{value} from (#{row_index},#{determined_column_index})" if cell.candidate?(value)
-              end
-              cell.eliminate_candidate(value) unless block.row_range.includes?(row_index)
-            end
+            eliminate_candidate_in_section_except_in_block(value, column, block)
           end
+        end
+      end
+    end
+
+    def find_determined_row_column_in_block(value : CellValue, block : Block)
+      # value can go nowhere in this block if already in the block
+      return {nil, nil} if block.has?(value)
+
+      candidate_rows = Set(Int32).new
+      candidate_columns = Set(Int32).new
+
+      # Find the set of rows/columns within this block which could contain
+      # value.
+      block.each_cell_with_position do |cell, (row_index, column_index)|
+        if cell.candidate?(value)
+          candidate_rows.add(row_index)
+          candidate_columns.add(column_index)
+        end
+      end
+
+      # And now, if there is only one row that could contain value in this
+      # block, then we can deduce that value cannot be placed in that row
+      # in the two blocks horizontally adjacent to this block.
+      # And likewise, for columns and vertically adjacent blocks.
+      determined_row_index = candidate_rows.size == 1 ? candidate_rows.to_a[0] : nil
+      determined_column_index = candidate_columns.size == 1 ? candidate_columns.to_a[0] : nil
+
+      {determined_row_index, determined_column_index}
+    end
+
+    def eliminate_candidate_in_section_except_in_block(candidate_value : CellValue,
+                                                       section : LinearSection,
+                                                       block : Block)
+      # If some value will definitely go in a particular row within a block
+      # but is not yet fully determined, then the two horizontally adjacent
+      # blocks can eliminate that value as a candidate from all of their cells
+      # in this row.
+      # LIKEWISE FOR A COLUMN:
+      # If some value will definitely go in a particular column within a block
+      # but is not yet fully determined, then the two vertically adjacent
+      # blocks can eliminate that value as a candidate from all of their cells
+      # in this column.
+      section.each_cell_with_position do |cell, position|
+        unless block.includes?(position)
+          debug "   > eliminate #{candidate_value} from #{position}" if cell.candidate?(candidate_value)
+          cell.eliminate_candidate(candidate_value)
         end
       end
     end

@@ -1,6 +1,7 @@
 #if !defined(_SUDOKU_SOLVER_H_)
 #define _SUDOKU_SOLVER_H_
 
+#include "Position.h"
 #include "State.h"
 #include <iostream>
 #include <string>
@@ -23,6 +24,10 @@ private:
   std::vector<Position> find_candidate_positions(int value, const Block& block);
   void solve_determined();
   void eliminate_candidates_by_partial_determination();
+  Position find_determined_row_column_in_block(int value, const Block& block);
+  void eliminate_candidate_in_section_except_in_block(int value,
+                                                      const Section& section,
+                                                      const Block& block);
 
 public:
   Solver(const std::string& filename) { sudoku.load_from_file(filename); }

@@ -121,63 +121,61 @@ void Solver::eliminate_candidates_by_partial_determination() {
       Block& block = sudoku.block(block_row_index, block_column_index);
 
       for (int value = 1; value <= N; value++) {
-        if (block.has(value)) {
-          continue;
-        }
+        Position position = find_determined_row_column_in_block(value, block);
 
-        set<int> candidate_rows;
-        set<int> candidate_columns;
-
-        SectionIterator* block_iterator = block.get_iterator();
-
-        while (!block_iterator->done()) {
-          Position position = block_iterator->next_position();
-
-          if (sudoku.cell(position).is_candidate(value)) {
-            candidate_rows.insert(position.row());
-            candidate_columns.insert(position.column());
-          }
-        }
-
-        delete block_iterator;
-
-        bool row_determined = candidate_rows.size() == 1;
-        bool column_determined = candidate_columns.size() == 1;
-
-        int determined_row_index = *candidate_rows.begin();
-        int determined_column_index = *candidate_columns.begin();
-        Position position(determined_row_index, determined_column_index);
-
-        if (row_determined && column_determined) {
+        if (position.is_row_determined() && position.is_column_determined()) {
           sudoku.place(value, position);
-        } else if (row_determined) {
-          Row& row = sudoku.row(position);
-          SectionIterator* row_iterator = row.get_iterator();
-
-          while (!row_iterator->done()) {
-            Position position = row_iterator->next_position();
-
-            if (!block.includes(position)) {
-              sudoku.cell(position).eliminate_candidate(value);
-            }
-          }
-
-          delete row_iterator;
-        } else if (column_determined) {
-          Column& column = sudoku.column(position);
-          SectionIterator* column_iterator = column.get_iterator();
-
-          while (!column_iterator->done()) {
-            Position position = column_iterator->next_position();
-
-            if (!block.includes(position)) {
-              sudoku.cell(position).eliminate_candidate(value);
-            }
-          }
-
-          delete column_iterator;
+        } else if (position.is_row_determined()) {
+          const Row& row = sudoku.row(position);
+          eliminate_candidate_in_section_except_in_block(value, row, block);
+        } else if (position.is_column_determined()) {
+          const Column& column = sudoku.column(position);
+          eliminate_candidate_in_section_except_in_block(value, column, block);
         }
       }
     }
   }
+}
+
+Position Solver::find_determined_row_column_in_block(int value,
+                                                     const Block& block) {
+  if (block.has(value)) {
+    return Position::undetermined();
+  }
+
+  set<int> candidate_rows;
+  set<int> candidate_columns;
+
+  SectionIterator* block_iterator = block.get_iterator();
+
+  while (!block_iterator->done()) {
+    Position position = block_iterator->next_position();
+
+    if (sudoku.cell(position).is_candidate(value)) {
+      candidate_rows.insert(position.row());
+      candidate_columns.insert(position.column());
+    }
+  }
+
+  delete block_iterator;
+
+  return Position(candidate_rows.size() == 1 ? *candidate_rows.begin()
+                                             : UNDETERMINED_INDEX,
+                  candidate_columns.size() == 1 ? *candidate_columns.begin()
+                                                : UNDETERMINED_INDEX);
+}
+
+void Solver::eliminate_candidate_in_section_except_in_block(
+    int value, const Section& section, const Block& block) {
+  SectionIterator* iterator = section.get_iterator();
+
+  while (!iterator->done()) {
+    Position position = iterator->next_position();
+
+    if (!block.includes(position)) {
+      sudoku.cell(position).eliminate_candidate(value);
+    }
+  }
+
+  delete iterator;
 }
