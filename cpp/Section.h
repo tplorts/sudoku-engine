@@ -5,6 +5,7 @@
 #include "Grid.h"
 #include "Position.h"
 #include "common.h"
+#include <bitset>
 
 namespace Sudoku {
 
