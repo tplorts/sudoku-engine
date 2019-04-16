@@ -26,7 +26,7 @@ public:
 
   void load_from_file(const std::string& filename);
 
-  Cell& get_cell(const Position& position) { return grid(position); }
+  Cell& cell(const Position& position) { return grid(position); }
 
   int get_empty_cell_count() const { return empty_cell_count; }
 
