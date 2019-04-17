@@ -9,7 +9,11 @@ solver = Sudoku::Solver.new(
 puts "Before"
 solver.print_grid
 
-solver.solve
+begin
+  solver.solve
+rescue exception
+  puts solver.sudoku.grid.to_verbose_s
+end
 
 puts "\n\nAfter"
 solver.print_grid

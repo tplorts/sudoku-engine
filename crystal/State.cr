@@ -9,7 +9,7 @@ module Sudoku
   class State
     getter empty_cell_count : Int32
 
-    protected property grid : Grid
+    getter grid : Grid
 
     protected property rows : Array(Row)
     protected property columns : Array(Column)

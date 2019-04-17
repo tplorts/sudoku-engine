@@ -3,7 +3,7 @@ require "./Sections"
 
 module Sudoku
   class Solver
-    protected property sudoku : State
+    getter sudoku : State
 
     protected property debug_output_enabled : Bool
     protected property validation_enabled : Bool
@@ -23,7 +23,7 @@ module Sudoku
     end
 
     def print_grid
-      debug @sudoku.to_s
+      debug @sudoku.grid.to_s
     end
 
     def empty_count
