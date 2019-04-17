@@ -107,7 +107,11 @@ module Sudoku
           (1..N).all? do |n|
             # n should only be a candidate value for this cell if none of its
             # sections (row/column/block) contain n.
-            cell.candidate?(n) == cells_sections.none?(&.has?(n))
+            !cell.candidate?(n) || cells_sections.none?(&.has?(n))
+            # Note, however, that n may have already been eliminated as a
+            # candidate value for this cell even though none of this cell’s
+            # sections yet contain n.  This possibility arises from cell-value
+            # candidate elimination by partial determination.
           end
         end
       end
