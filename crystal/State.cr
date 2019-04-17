@@ -49,16 +49,14 @@ module Sudoku
       end
     end
 
-    def to_s
-      @grid.to_s
+    def sections_for_position(position : Position)
+      [row(position), column(position), block(position)]
     end
 
     def place(value : Int, position : Position)
       @grid[position].place(value)
 
-      row(position).place(value)
-      column(position).place(value)
-      block(position).place(value)
+      sections_for_position(position).each(&.place(value))
 
       @empty_cell_count -= 1
     end
@@ -97,7 +95,7 @@ module Sudoku
 
     def all_cell_states_agree_with_section_states
       @grid.all_cells? do |cell, position|
-        cells_sections = [row(position), column(position), block(position)]
+        cells_sections = sections_for_position(position)
         occupant = cell.occupant
         if occupant
           # Make sure that this cell’s row, column, & block all know that they
