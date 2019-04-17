@@ -8,7 +8,9 @@ module Sudoku
     protected property debug_output_enabled : Bool
     protected property validation_enabled : Bool
 
-    def initialize(filename, debug_output_enabled : Bool = false, validation_enabled : Bool = false)
+    def initialize(filename : String,
+                   debug_output_enabled : Bool = false,
+                   validation_enabled : Bool = false)
       @debug_output_enabled = debug_output_enabled
       @validation_enabled = validation_enabled
 
