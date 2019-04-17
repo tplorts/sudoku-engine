@@ -91,7 +91,26 @@ module Sudoku
       @grid.valid? &&
         @rows.all?(&.valid?) &&
         @columns.all?(&.valid?) &&
-        @blocks.all?(&.all?(&.valid?))
+        @blocks.all?(&.all?(&.valid?)) &&
+        all_cell_states_agree_with_section_states
+    end
+
+    def all_cell_states_agree_with_section_states
+      @grid.all_cells? do |cell, position|
+        cells_sections = [row(position), column(position), block(position)]
+        occupant = cell.occupant
+        if occupant
+          # Make sure that this cell’s row, column, & block all know that they
+          # contain this value (the value in this cell)
+          cells_sections.all?(&.has?(occupant))
+        else
+          (1..N).all? do |n|
+            # n should only be a candidate value for this cell if none of its
+            # sections (row/column/block) contain n.
+            cell.candidate?(n) == cells_sections.none?(&.has?(n))
+          end
+        end
+      end
     end
   end
 end

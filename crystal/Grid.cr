@@ -29,6 +29,13 @@ module Sudoku
       each_position { |position| yield cell(position), position }
     end
 
+    def all_cells?
+      each_cell_with_position do |cell, position|
+        return false unless yield(cell, position)
+      end
+      true
+    end
+
     def to_s
       row_strings = @table.map { |table_row| "| #{table_row.map(&.to_s).join(" | ")} |" }
       h_line = "\n#{"-" * row_strings[0].size}\n"
