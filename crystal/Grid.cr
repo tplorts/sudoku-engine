@@ -47,7 +47,7 @@ module Sudoku
     end
 
     def valid?
-      @rows.all?(&.valid?) && @columns.all?(&.valid?) && @blocks.all?(&.all?(&.valid?))
+      @table.all?(&.all?(&.valid?))
     end
   end
 end

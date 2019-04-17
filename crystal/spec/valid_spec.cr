@@ -32,4 +32,18 @@ describe State do
       end
     end
   end
+
+  describe "cell valid?" do
+    sudoku_a.each_cell_with_position do |cell, position|
+      it "should report that cell #{position} is valid" do
+        cell.valid?.should be_true
+      end
+    end
+  end
+
+  describe "cell valid?" do
+    it "should report that the whole sudoku state is valid" do
+      sudoku_a.valid?.should be_true
+    end
+  end
 end

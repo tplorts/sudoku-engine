@@ -47,6 +47,14 @@ module Sudoku
       (1..N).find { |n| candidate?(n) } || raise "no candidate!"
     end
 
+    def has_any_candidates?
+      (1..N).any? { |n| @candidates[n] }
+    end
+
+    def valid?
+      has_any_candidates? == unoccupied?
+    end
+
     def to_s
       occupant ? occupant.to_s : " "
     end
