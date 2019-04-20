@@ -15,8 +15,8 @@ abstract class Section {
 
   public abstract eachPosition(fn: (p: GridPosition) => any): void;
 
-  public eachCell(fn: (c: Cell) => any) {
-    this.eachPosition(position => fn(this.grid.cell(position)));
+  public eachCell(fn: (c: Cell, p: GridPosition) => any) {
+    this.eachPosition(position => fn(this.grid.cell(position), position));
   }
 
   public has = (value: number) => this.hasMap.get(value);

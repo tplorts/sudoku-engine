@@ -43,6 +43,10 @@ export default class State {
     this.grid.eachPosition(position => fn(this.grid.cell(position), position));
   }
 
+  public eachBlock(fn: (b: Block) => any) {
+    this.blocks.forEach(blockRow => blockRow.forEach(fn));
+  }
+
   public place(value: number, position: GridPosition) {
     this.grid.cell(position).place(value);
 

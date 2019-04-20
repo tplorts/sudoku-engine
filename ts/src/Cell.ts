@@ -1,8 +1,6 @@
 import _ from 'lodash';
-import { CellOccupant, N } from './core';
 import BitArray from './BitArray';
-
-const ALL_VALUES = _.range(1, N + 1);
+import { ALL_VALUES, CellOccupant } from './core';
 
 export default class Cell {
   occupant: CellOccupant = null;
