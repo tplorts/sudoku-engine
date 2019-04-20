@@ -1,8 +1,12 @@
 require "./core"
 require "./Cell"
+require "./GridFormatter"
 
 module Sudoku
   class Grid
+    @@verbose_formatter = VerboseGridFormatter.new
+    @@standard_formatter = StandardGridFormatter.new
+
     protected property table : Array(Array(Cell))
 
     def initialize
@@ -37,20 +41,11 @@ module Sudoku
     end
 
     def to_s
-      row_strings = @table.map { |table_row| "| #{table_row.map(&.to_s).join(" | ")} |" }
-      h_line = "\n#{"-" * row_strings[0].size}\n"
-      "#{h_line}#{row_strings.join(h_line)}#{h_line}".strip
+      @@standard_formatter.stringify(@table)
     end
 
     def to_verbose_s
-      row_strings = @table.map do |table_row|
-        inner_row_string = table_row
-          .map(&.to_verbose_s)
-          .join(" | ")
-        "| #{inner_row_string} |"
-      end
-      h_line = "\n#{"-" * row_strings[0].size}\n"
-      "#{h_line}#{row_strings.join(h_line)}#{h_line}"
+      @@verbose_formatter.stringify(@table)
     end
 
     def valid?
