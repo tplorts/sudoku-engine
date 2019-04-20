@@ -6,4 +6,7 @@ module Sudoku
   alias CellValue = Int32
   alias CellOccupant = CellValue | Nil
   alias Position = {Int32, Int32}
+
+  class InvalidError < Exception
+  end
 end

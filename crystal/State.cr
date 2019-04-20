@@ -16,12 +16,20 @@ module Sudoku
 
     def initialize
       @grid = Grid.new
-
       @empty_cell_count = N * N
 
       @rows = (0...N).map { |i| Row.new(@grid, i) }
       @columns = (0...N).map { |i| Column.new(@grid, i) }
       @blocks = (0...B).map { |br| (0...B).map { |bc| Block.new(@grid, br, bc) } }
+    end
+
+    def initialize(source : State)
+      @grid = Grid.new(source.grid)
+      @empty_cell_count = source.empty_cell_count
+
+      @rows = source.rows.map { |source_row| Row.new(@grid, source_row) }
+      @columns = source.columns.map { |source_column| Column.new(@grid, source_column) }
+      @blocks = source.blocks.map(&.map { |source_block| Block.new(@grid, source_block) })
     end
 
     def load_from_file(filename : String)

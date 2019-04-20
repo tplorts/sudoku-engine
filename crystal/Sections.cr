@@ -4,8 +4,14 @@ require "./Grid"
 
 module Sudoku
   abstract class Section
+    getter has_map : BitArray
+
     def initialize(@grid : Grid)
-      @has = BitArray.new(N + 1)
+      @has_map = BitArray.new(N + 1)
+    end
+
+    def initialize(@grid : Grid, source : Section)
+      @has_map = source.has_map[0..N]
     end
 
     def each_position(&block)
@@ -20,11 +26,12 @@ module Sudoku
     end
 
     def has?(value : CellValue)
-      @has[value]
+      @has_map[value]
     end
 
     def place(value : CellValue)
-      @has[value] = true
+      raise "Hey! #{value} isn’t supposed to go in this section!" if has?(value)
+      @has_map[value] = true
       each_cell(&.eliminate_candidate(value))
     end
 
@@ -42,8 +49,15 @@ module Sudoku
   end
 
   abstract class LinearSection < Section
+    getter index : Int32
+
     def initialize(@grid : Grid, @index : Int32)
       super(@grid)
+    end
+
+    def initialize(@grid : Grid, source : LinearSection)
+      super
+      @index = source.index
     end
   end
 
@@ -72,6 +86,13 @@ module Sudoku
 
       @row_range = make_index_range(block_row_index)
       @column_range = make_index_range(block_column_index)
+    end
+
+    def initialize(@grid : Grid, source : Block)
+      super
+
+      @row_range = source.row_range
+      @column_range = source.column_range
     end
 
     def each_position

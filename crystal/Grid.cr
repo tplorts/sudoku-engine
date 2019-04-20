@@ -13,6 +13,10 @@ module Sudoku
       @table = Array.new(N) { |r| Array.new(N) { |c| Cell.new } }
     end
 
+    def initialize(source : Grid)
+      @table = source.table.map(&.map { |source_cell| Cell.new(source_cell) })
+    end
+
     def cell(position : Position)
       @table[position[0]][position[1]]
     end

@@ -3,31 +3,51 @@ require "./Sections"
 
 module Sudoku
   class Solver
-    getter sudoku : State
+    @@recursions = 0
+
+    getter state : State
 
     protected property debug_output_enabled : Bool
-    protected property validation_enabled : Bool
+    protected property debug_validation_enabled : Bool
+
+    protected property search_depth : Int32
 
     def initialize(filename : String,
                    debug_output_enabled : Bool = false,
-                   validation_enabled : Bool = false)
+                   debug_validation_enabled : Bool = false)
       @debug_output_enabled = debug_output_enabled
-      @validation_enabled = validation_enabled
+      @debug_validation_enabled = debug_validation_enabled
 
-      @sudoku = State.new
-      @sudoku.load_from_file(filename)
+      @search_depth = 0
+
+      @state = State.new
+      @state.load_from_file(filename)
+    end
+
+    def initialize(source : Solver)
+      @@recursions += 1
+
+      @debug_output_enabled = source.debug_output_enabled
+      @debug_validation_enabled = source.debug_validation_enabled
+
+      @search_depth = source.search_depth + 1
+
+      @state = State.new(source.state)
     end
 
     def debug(stuff)
-      puts stuff if @debug_output_enabled
-    end
+      if @debug_output_enabled
+        indentation = "> " * @search_depth
 
-    def print_grid
-      debug @sudoku.grid.to_s
+        puts stuff
+          .split('\n')
+          .map { |line| indentation + line }
+          .join('\n')
+      end
     end
 
     def empty_count
-      @sudoku.empty_cell_count
+      @state.empty_cell_count
     end
 
     def complete?
@@ -35,11 +55,11 @@ module Sudoku
     end
 
     def valid?
-      @sudoku.valid?
+      @state.valid?
     end
 
     def validate
-      raise "SUDOKU INVALID" if @validation_enabled && !valid?
+      raise InvalidError.new if @debug_validation_enabled && !valid?
     end
 
     def solve
@@ -53,11 +73,28 @@ module Sudoku
         eliminate_candidates_by_partial_determination unless complete?
 
         placements_made = initial_empty_count - empty_count
-        debug "major iteration #{iterations}: #{placements_made} placements"
         iterations += 1
       end
 
-      raise "Failed to solve" if empty_count > 0
+      complete? ? self : try_to_solve
+    end
+
+    def try_to_solve
+      @state.each_cell_with_position do |cell, position|
+        next if cell.occupied?
+
+        cell.candidate_values.each do |candidate_value|
+          child = Solver.new(self)
+          child.state.place(candidate_value, position)
+          begin
+            child.solve
+          rescue error : InvalidError
+          end
+          return child if child.complete?
+        end
+      end
+
+      nil
     end
 
     def solve_determined
@@ -68,15 +105,12 @@ module Sudoku
         initial_empty_count = empty_count
 
         exhaustively_fill_determined_cells
-
         validate
 
         exhaustively_fill_determined_positions
-
         validate
 
         placements_made = initial_empty_count - empty_count
-        debug "determined iteration #{iterations}: #{placements_made} placements"
         iterations += 1
       end
     end
@@ -94,16 +128,13 @@ module Sudoku
         fill_determined_cells
 
         placements_made = initial_empty_count - empty_count
-
-        debug "Filled #{placements_made} cells" if @debug_output_enabled
-        print_grid if placements_made > 0
         validate
       end
     end
 
     def fill_determined_cells
-      @sudoku.each_cell_with_position do |cell, position|
-        @sudoku.place(cell.candidate, position) if cell.determined?
+      @state.each_cell_with_position do |cell, position|
+        @state.place(cell.first_candidate, position) if cell.determined?
       end
     end
 
@@ -116,9 +147,6 @@ module Sudoku
         fill_determined_positions
 
         placements_made = initial_empty_count - empty_count
-
-        debug "Filled #{placements_made} positions" if @debug_output_enabled
-        print_grid if placements_made > 0
         validate
       end
     end
@@ -127,9 +155,9 @@ module Sudoku
     # and places the value there if any such fully determined positions are found.
     def fill_determined_positions
       (1..N).each do |value|
-        @sudoku.each_block do |block|
+        @state.each_block do |block|
           candidate_positions = find_candidate_positions(value, block)
-          @sudoku.place(value, candidate_positions[0]) if candidate_positions.size == 1
+          @state.place(value, candidate_positions[0]) if candidate_positions.size == 1
         end
       end
     end
@@ -145,8 +173,8 @@ module Sudoku
         # Skip checking whether the Block has value here since we
         # already did that above, before looping through each cell
         next if cell.occupied? ||
-                @sudoku.row(position).has?(value) ||
-                @sudoku.column(position).has?(value)
+                @state.row(position).has?(value) ||
+                @state.column(position).has?(value)
 
         candidates << position
       end
@@ -155,19 +183,17 @@ module Sudoku
     end
 
     def eliminate_candidates_by_partial_determination
-      @sudoku.each_block do |block|
+      @state.each_block do |block|
         (1..N).each do |value|
           determined_row_index, determined_column_index = find_determined_row_column_in_block(value, block)
 
           if determined_row_index && determined_column_index
-            @sudoku.place(value, {determined_row_index, determined_column_index})
+            @state.place(value, {determined_row_index, determined_column_index})
           elsif determined_row_index
-            row = @sudoku.row(determined_row_index)
-            debug "Eliminating #{value} from row #{determined_row_index} except in columns #{block.column_range}"
+            row = @state.row(determined_row_index)
             eliminate_candidate_in_section_except_in_block(value, row, block)
           elsif determined_column_index
-            column = @sudoku.column(determined_column_index)
-            debug "Eliminating #{value} from column #{determined_column_index} except in rows #{block.row_range}"
+            column = @state.column(determined_column_index)
             eliminate_candidate_in_section_except_in_block(value, column, block)
           end
         end
@@ -214,7 +240,6 @@ module Sudoku
       # in this column.
       section.each_cell_with_position do |cell, position|
         unless block.includes?(position)
-          debug "   > eliminate #{candidate_value} from #{position}" if cell.candidate?(candidate_value)
           cell.eliminate_candidate(candidate_value)
         end
       end
