@@ -1,4 +1,4 @@
-require "bit_array"
+require "./BitArray"
 require "./core"
 require "./Grid"
 

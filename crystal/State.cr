@@ -1,5 +1,4 @@
 require "file"
-require "bit_array"
 require "./core"
 require "./Cell"
 require "./Grid"
