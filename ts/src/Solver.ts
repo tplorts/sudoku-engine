@@ -1,6 +1,7 @@
+import _ from 'lodash';
 import { ALL_VALUES } from './core';
 import GridPosition from './GridPosition';
-import { Block } from './Sections';
+import { Block, LinearSection } from './Sections';
 import State from './State';
 
 export interface SolverOptions {
@@ -14,8 +15,9 @@ const defaultOptions: SolverOptions = {
 };
 
 export default class Solver {
-  private options: SolverOptions;
   readonly state: State;
+  private options: SolverOptions;
+  private nestingDepth = 0;
 
   constructor(filename: string, options = defaultOptions) {
     this.options = options;
@@ -24,18 +26,41 @@ export default class Solver {
     this.state.loadFromFile(filename);
   }
 
-  public solve() {
-    this.solveDetermined();
-  }
-
   emptyCount = () => this.state.emptyCellCount;
   isComplete = () => this.emptyCount() === 0;
+
+  place(n: number, position: GridPosition) {
+    this.log(`Placing ${n} in ${position}`);
+    this.state.place(n, position);
+  }
+
+  log(message: string) {
+    if (this.options.debugOutputEnabled) {
+      const indentation = ' >'.repeat(this.nestingDepth) + ' ';
+      const nestedMessage = message
+        .split('\n')
+        .map(line => indentation + line)
+        .join('\n');
+      console.log(nestedMessage);
+    }
+  }
+
+  solve() {
+    this.untilCompleteOrStuck(() => {
+      this.solveDetermined();
+
+      if (!this.isComplete()) {
+        this.log(this.state.grid.toVerboseString());
+        this.eliminateCandidatesByPartialDetermination();
+      }
+    }, 'solve');
+  }
 
   solveDetermined() {
     this.untilCompleteOrStuck(() => {
       this.exhaustivelyFillDeterminedCells();
       this.exhaustivelyFillDeterminedPositions();
-    });
+    }, 'solveDetermined');
   }
 
   /**
@@ -45,7 +70,10 @@ export default class Solver {
    * sweep makes no placements.
    */
   exhaustivelyFillDeterminedCells() {
-    this.untilCompleteOrStuck(this.fillDeterminedCells);
+    this.untilCompleteOrStuck(
+      this.fillDeterminedCells,
+      'exhaustivelyFillDeterminedCells'
+    );
   }
 
   /**
@@ -56,13 +84,16 @@ export default class Solver {
   fillDeterminedCells = () => {
     this.state.eachCell((cell, position) => {
       if (cell.isUnoccupied() && cell.isDetermined()) {
-        this.state.place(cell.firstCandidate(), position);
+        this.place(cell.firstCandidate(), position);
       }
     });
   };
 
   exhaustivelyFillDeterminedPositions() {
-    this.untilCompleteOrStuck(this.fillDeterminedPositions);
+    this.untilCompleteOrStuck(
+      this.fillDeterminedPositions,
+      'exhaustivelyFillDeterminedPositions'
+    );
   }
 
   fillDeterminedPositions = () => {
@@ -78,7 +109,7 @@ export default class Solver {
     this.state.eachBlock(block => {
       const candidatePositions = this.findCandidatePositions(n, block);
       if (candidatePositions.length === 1) {
-        this.state.place(n, candidatePositions[0]);
+        this.place(n, candidatePositions[0]);
       }
     });
   };
@@ -108,8 +139,67 @@ export default class Solver {
     return candidatePositions;
   }
 
-  private untilCompleteOrStuck(operate: Function) {
+  eliminateCandidatesByPartialDetermination() {
+    this.state.eachBlock(block => {
+      ALL_VALUES.forEach(n => {
+        if (block.has(n)) return;
+
+        const [
+          determinedRowIndex,
+          determinedColumnIndex,
+        ] = this.findDeterminedRowColumnInBlock(n, block);
+
+        const position = new GridPosition(
+          determinedRowIndex || 0,
+          determinedColumnIndex || 0
+        );
+
+        if (!_.isNil(determinedRowIndex) && !_.isNil(determinedColumnIndex)) {
+          this.place(n, position);
+        } else if (!_.isNil(determinedRowIndex)) {
+          const row = this.state.row(position);
+          this.eliminateCandidateInSectionExceptInBlock(n, row, block);
+        } else if (!_.isNil(determinedColumnIndex)) {
+          const column = this.state.column(position);
+          this.eliminateCandidateInSectionExceptInBlock(n, column, block);
+        }
+      });
+    });
+  }
+
+  findDeterminedRowColumnInBlock(n: number, block: Block) {
+    const candidateRows = new Set<number>();
+    const candidateColumns = new Set<number>();
+
+    block.eachCell((cell, position) => {
+      if (cell.isCandidate(n)) {
+        candidateRows.add(position.row);
+        candidateColumns.add(position.column);
+      }
+    });
+
+    return [onlyValueOrNull(candidateRows), onlyValueOrNull(candidateColumns)];
+  }
+
+  eliminateCandidateInSectionExceptInBlock(
+    candidateValue: number,
+    section: LinearSection,
+    block: Block
+  ) {
+    section.eachCell((cell, position) => {
+      if (!block.includes(position)) {
+        if (cell.isCandidate(candidateValue)) {
+          this.log(`eliminate ${candidateValue} from ${position}`);
+        }
+        cell.eliminateCandidate(candidateValue);
+      }
+    });
+  }
+
+  private untilCompleteOrStuck(operate: Function, label: string = '') {
     let isStuck = false;
+    this.nestingDepth++;
+    this.log('Begin ' + label);
 
     while (!this.isComplete() && !isStuck) {
       const initialEmptyCount = this.emptyCount();
@@ -118,5 +208,11 @@ export default class Solver {
 
       isStuck = this.emptyCount() === initialEmptyCount;
     }
+    this.log('End ' + label);
+    this.nestingDepth--;
   }
+}
+
+function onlyValueOrNull<T>(set: Set<T>) {
+  return set.size == 1 ? set.values().next().value : null;
 }

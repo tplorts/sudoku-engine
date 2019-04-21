@@ -6,4 +6,8 @@ export default class GridPosition {
     this.row = row;
     this.column = column;
   }
+
+  toString() {
+    return `(${this.row},${this.column})`;
+  }
 }

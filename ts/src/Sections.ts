@@ -5,7 +5,7 @@ import { N, B } from './core';
 import Grid from './Grid';
 import GridPosition from './GridPosition';
 
-abstract class Section {
+export abstract class Section {
   protected hasMap = new BitArray();
   protected grid: Grid;
 
@@ -27,7 +27,7 @@ abstract class Section {
   }
 }
 
-abstract class LinearSection extends Section {
+export abstract class LinearSection extends Section {
   protected index: number;
 
   constructor(grid: Grid, index: number) {
