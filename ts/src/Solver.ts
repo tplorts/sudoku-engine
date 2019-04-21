@@ -1,12 +1,12 @@
 import _ from 'lodash';
 import { ALL_VALUES } from './core';
 import GridPosition from './GridPosition';
-import { Block, LinearSection } from './Sections';
+import { Block, LinearSection, Section } from './Sections';
 import State from './State';
 
 export interface SolverOptions {
-  debugOutputEnabled: boolean;
-  debugValidationEnabled: boolean;
+  debugOutputEnabled?: boolean;
+  debugValidationEnabled?: boolean;
 }
 
 const defaultOptions: SolverOptions = {
@@ -20,7 +20,10 @@ export default class Solver {
   private nestingDepth = 0;
 
   constructor(filename: string, options = defaultOptions) {
-    this.options = options;
+    this.options = {
+      ...defaultOptions,
+      ...options,
+    };
 
     this.state = new State();
     this.state.loadFromFile(filename);
@@ -101,42 +104,49 @@ export default class Solver {
   };
 
   /**
-   * Perform one sweep across the whol grid, looking for blocks in which there
-   * is exactly one place to put the value n, and make such placements when
-   * found.
+   * Perform one sweep across the whole grid, looking for rows, columns, &
+   * blocks in which there is exactly one place to put the value `n`, and make
+   * such placements when found.
    */
   fillDeterminedPositionsForValue = (n: number) => {
-    this.state.eachBlock(block => {
-      const candidatePositions = this.findCandidatePositions(n, block);
-      if (candidatePositions.length === 1) {
-        this.place(n, candidatePositions[0]);
-      }
-    });
+    this.state.eachSection(section =>
+      this.fillDeterminedPositionsForValueIn(n, section)
+    );
+  };
+
+  fillDeterminedPositionsForValueIn = (n: number, section: Section) => {
+    const candidatePositions = this.findCandidatePositions(n, section);
+    if (candidatePositions.length === 1) {
+      this.log(`${section} position determination`);
+      this.place(n, candidatePositions[0]);
+    }
   };
 
   /**
-   * Assemble a list of positions in block in which the value n could be placed.
-   * If the block already has n, this will return an empty list.  If the block
-   * does not alreday have n, then the list will contain the positions from
-   * within the block whose cell is unoccupied and whose row and column do not
-   * have n yet.
+   * Assemble a list of positions in `section` in which the value `n` could be
+   * placed.  _(recall: `section` could be a block, row, or column.)_
+   * If `section` already has `n`, this will return an empty list.  If `section`
+   * does not alreday have `n`, then the list will contain the positions from
+   * within `section` whose cell is unoccupied and whose row, column, & block
+   * all do not yet have `n`.
    */
-  findCandidatePositions(n: number, block: Block) {
+  findCandidatePositions(n: number, section: Section) {
     const candidatePositions = [] as GridPosition[];
 
-    if (!block.has(n)) {
-      block.eachCell((cell, position) => {
-        if (
-          cell.isUnoccupied() &&
-          !this.state.row(position).has(n) &&
-          !this.state.column(position).has(n)
-        ) {
+    if (!section.has(n)) {
+      section.eachCell((cell, position) => {
+        if (cell.isUnoccupied() && !this.anySectionsHave(position, n)) {
           candidatePositions.push(position);
         }
       });
     }
 
     return candidatePositions;
+  }
+
+  anySectionsHave(position: GridPosition, n: number) {
+    const sections = this.state.sectionsForPosition(position);
+    return _.some(sections, section => section.has(n));
   }
 
   eliminateCandidatesByPartialDetermination() {

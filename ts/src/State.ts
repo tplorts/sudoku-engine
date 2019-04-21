@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { B, N } from './core';
 import Grid from './Grid';
 import GridPosition from './GridPosition';
-import { Block, Column, Row } from './Sections';
+import { Block, Column, Row, Section } from './Sections';
 import Cell from './Cell';
 
 export default class State {
@@ -43,6 +43,20 @@ export default class State {
     this.grid.eachPosition(position => fn(this.grid.cell(position), position));
   }
 
+  public eachSection(fn: (s: Section) => any) {
+    this.eachRow(fn);
+    this.eachColumn(fn);
+    this.eachBlock(fn);
+  }
+
+  public eachRow(fn: (r: Row) => any) {
+    this.rows.forEach(fn);
+  }
+
+  public eachColumn(fn: (c: Column) => any) {
+    this.columns.forEach(fn);
+  }
+
   public eachBlock(fn: (b: Block) => any) {
     this.blocks.forEach(blockRow => blockRow.forEach(fn));
   }
@@ -55,7 +69,7 @@ export default class State {
     this.emptyCellCount--;
   }
 
-  private sectionsForPosition = (position: GridPosition) => [
+  sectionsForPosition = (position: GridPosition) => [
     this.row(position),
     this.column(position),
     this.block(position),

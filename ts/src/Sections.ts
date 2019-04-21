@@ -40,11 +40,19 @@ export class Row extends LinearSection {
   public eachPosition(fn: (p: GridPosition) => any): void {
     _.times(N, columnIndex => fn(new GridPosition(this.index, columnIndex)));
   }
+
+  public toString() {
+    return `row ${this.index}`;
+  }
 }
 
 export class Column extends LinearSection {
   public eachPosition(fn: (p: GridPosition) => any): void {
     _.times(N, rowIndex => fn(new GridPosition(rowIndex, this.index)));
+  }
+
+  public toString() {
+    return `column ${this.index}`;
   }
 }
 
@@ -76,6 +84,10 @@ export class Block extends Section {
       isInBlockRange(this.baseRowIndex, position.row) &&
       isInBlockRange(this.baseColumnIndex, position.column)
     );
+  }
+
+  public toString() {
+    return `block [${this.baseRowIndex / B},${this.baseColumnIndex / B}]`;
   }
 }
 
