@@ -184,10 +184,10 @@ module Sudoku
       # block, then we can deduce that value cannot be placed in that row
       # in the two blocks horizontally adjacent to this block.
       # And likewise, for columns and vertically adjacent blocks.
-      determined_row_index = candidate_rows.size == 1 ? candidate_rows.to_a[0] : nil
-      determined_column_index = candidate_columns.size == 1 ? candidate_columns.to_a[0] : nil
-
-      {determined_row_index, determined_column_index}
+      {
+        only_value_or_nil(candidate_rows),
+        only_value_or_nil(candidate_columns),
+      }
     end
 
     def eliminate_candidate_in_section_except_in_block(
@@ -218,6 +218,10 @@ module Sudoku
         yield
         stuck? = empty_count == initial_empty_count
       end
+    end
+
+    def only_value_or_nil(set : Set)
+      set.size == 1 ? set.to_a[0] : nil
     end
   end
 end
