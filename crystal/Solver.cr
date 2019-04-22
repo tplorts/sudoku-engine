@@ -120,20 +120,20 @@ module Sudoku
     # and places the n there if any such fully determined positions are found.
     def fill_determined_positions
       (1..N).each do |n|
-        @state.each_block do |block|
-          candidate_positions = find_candidate_positions(n, block)
+        @state.each_section do |section|
+          candidate_positions = find_candidate_positions(n, section)
           @state.place(n, candidate_positions[0]) if candidate_positions.size == 1
         end
       end
     end
 
     # Finds the positions of all cells into which n could be placed
-    def find_candidate_positions(n : Int, block : Block) : Array(Position)
+    def find_candidate_positions(n : Int, section : Section) : Array(Position)
       candidates = Array(Position).new
 
       # Rule out immediately if this Block already has n
-      if !block.has?(n)
-        block.each_cell_with_position do |cell, position|
+      if !section.has?(n)
+        section.each_cell_with_position do |cell, position|
           candidates << position if cell.unoccupied? && !any_sections_have?(position, n)
         end
       end

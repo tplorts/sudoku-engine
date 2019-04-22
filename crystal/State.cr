@@ -48,6 +48,12 @@ module Sudoku
       end
     end
 
+    def each_section
+      @rows.each { |row| yield row }
+      @columns.each { |column| yield column }
+      each_block { |block| yield block }
+    end
+
     def each_block
       @blocks.each do |block_row|
         block_row.each do |block|
