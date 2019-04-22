@@ -137,14 +137,16 @@ module Sudoku
       block.each_cell_with_position do |cell, position|
         # Skip checking whether the Block has n here since we
         # already did that above, before looping through each cell
-        if cell.unoccupied? &&
-           !@state.row(position).has?(n) &&
-           !@state.column(position).has?(n)
+        if cell.unoccupied? && !any_sections_have?(position, n)
           candidates << position
         end
       end
 
       return candidates
+    end
+
+    def any_sections_have?(position : Position, n : Int)
+      @state.sections_for_position(position).any?(&.has?(n))
     end
 
     def eliminate_candidates_by_partial_determination
