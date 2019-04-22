@@ -132,13 +132,9 @@ module Sudoku
       candidates = Array(Position).new
 
       # Rule out immediately if this Block already has n
-      return candidates if block.has?(n)
-
-      block.each_cell_with_position do |cell, position|
-        # Skip checking whether the Block has n here since we
-        # already did that above, before looping through each cell
-        if cell.unoccupied? && !any_sections_have?(position, n)
-          candidates << position
+      if !block.has?(n)
+        block.each_cell_with_position do |cell, position|
+          candidates << position if cell.unoccupied? && !any_sections_have?(position, n)
         end
       end
 
