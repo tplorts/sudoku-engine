@@ -63,17 +63,9 @@ module Sudoku
     end
 
     def solve
-      iterations = 0
-      placements_made = nil
-
-      until complete? || placements_made == 0
-        initial_empty_count = empty_count
-
+      until_complete_or_stuck do
         solve_determined
         eliminate_candidates_by_partial_determination unless complete?
-
-        placements_made = initial_empty_count - empty_count
-        iterations += 1
       end
 
       complete? ? self : try_to_solve
@@ -98,20 +90,9 @@ module Sudoku
     end
 
     def solve_determined
-      iterations = 0
-      placements_made = nil
-
-      until complete? || placements_made == 0
-        initial_empty_count = empty_count
-
+      until_complete_or_stuck do
         exhaustively_fill_determined_cells
-        validate
-
         exhaustively_fill_determined_positions
-        validate
-
-        placements_made = initial_empty_count - empty_count
-        iterations += 1
       end
     end
 
@@ -120,16 +101,7 @@ module Sudoku
     # determined.  Stops repeating when no placements were made over the course
     # of a single iteration to check the entire sudoku.
     def exhaustively_fill_determined_cells
-      placements_made = nil
-
-      until complete? || placements_made == 0
-        initial_empty_count = empty_count
-
-        fill_determined_cells
-
-        placements_made = initial_empty_count - empty_count
-        validate
-      end
+      until_complete_or_stuck { fill_determined_cells }
     end
 
     def fill_determined_cells
@@ -139,16 +111,7 @@ module Sudoku
     end
 
     def exhaustively_fill_determined_positions
-      placements_made = nil
-
-      until complete? || placements_made == 0
-        initial_empty_count = empty_count
-
-        fill_determined_positions
-
-        placements_made = initial_empty_count - empty_count
-        validate
-      end
+      until_complete_or_stuck { fill_determined_positions }
     end
 
     # Searches for blocks in which there is only one candidate position for a value
@@ -242,6 +205,15 @@ module Sudoku
         unless block.includes?(position)
           cell.eliminate_candidate(candidate_value)
         end
+      end
+    end
+
+    def until_complete_or_stuck
+      stuck? = false
+      until complete? || stuck?
+        initial_empty_count = empty_count
+        yield
+        stuck? = empty_count == initial_empty_count
       end
     end
   end
