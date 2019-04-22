@@ -137,11 +137,11 @@ module Sudoku
       block.each_cell_with_position do |cell, position|
         # Skip checking whether the Block has n here since we
         # already did that above, before looping through each cell
-        next if cell.occupied? ||
-                @state.row(position).has?(n) ||
-                @state.column(position).has?(n)
-
-        candidates << position
+        if cell.unoccupied? &&
+           !@state.row(position).has?(n) &&
+           !@state.column(position).has?(n)
+          candidates << position
+        end
       end
 
       return candidates
