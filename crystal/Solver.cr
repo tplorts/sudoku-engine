@@ -37,11 +37,13 @@ module Sudoku
       @state = State.new(source.state)
     end
 
-    def debug(stuff)
+    def log
       if @debug_output_enabled
         indentation = "> " * @search_depth
 
-        puts stuff
+        message = yield
+
+        puts message
           .split('\n')
           .map { |line| indentation + line }
           .join('\n')
@@ -64,30 +66,53 @@ module Sudoku
       raise InvalidError.new if @debug_validation_enabled && !valid?
     end
 
+    def place(n : Int, position : Position)
+      # log { "placing #{n} in #{position}" }
+      @state.place(n, position)
+    end
+
     def solve
+      log { "begin solve with #{empty_count} left" }
+
       until_complete_or_stuck do
         solve_determined
         eliminate_candidates_by_partial_determination unless complete?
       end
 
-      complete? ? self : try_to_solve
-    end
+      log { "end solve with #{empty_count} left" }
+      if !complete?
+        if @search_depth == 0
+          log { "the following state is sound, before guessing begins:" }
+          log { state.grid.to_verbose_s }
+        end
+      end
 
-    def try_to_solve
+      return self if complete?
+
       @state.each_cell_with_position do |cell, position|
         next if cell.occupied?
 
         cell.candidate_values.each do |candidate_value|
           child = Solver.new(self)
-          child.state.place(candidate_value, position)
+          child.log { "guessing #{candidate_value} in #{position}" }
+          child.place(candidate_value, position)
           begin
             child.solve
+            if child.complete?
+              @state = child.state
+              return self
+            end
           rescue error : InvalidError
+            child.log { "abandoning branch; final branch state (contains contradiction):" }
+            child.log { child.state.grid.to_verbose_s }
+            log { "picking up from here:" }
+            log { @state.grid.to_verbose_s }
           end
-          return child if child.complete?
         end
       end
 
+      # Having now been through all possible placements, this branch fails to
+      # solve.
       nil
     end
 
@@ -108,7 +133,7 @@ module Sudoku
 
     def fill_determined_cells
       @state.each_cell_with_position do |cell, position|
-        @state.place(cell.first_candidate, position) if cell.determined?
+        place(cell.first_candidate, position) if cell.determined?
       end
     end
 
@@ -122,7 +147,7 @@ module Sudoku
       (1..N).each do |n|
         @state.each_section do |section|
           candidate_positions = find_candidate_positions(n, section)
-          @state.place(n, candidate_positions[0]) if candidate_positions.size == 1
+          place(n, candidate_positions[0]) if candidate_positions.size == 1
         end
       end
     end
@@ -150,10 +175,11 @@ module Sudoku
         (1..N).each do |n|
           next if block.has?(n)
 
-          determined_row_index, determined_column_index = find_determined_row_column_in_block(n, block)
+          determined_row_index, determined_column_index =
+            find_determined_row_column_in_block(n, block)
 
           if determined_row_index && determined_column_index
-            @state.place(n, {determined_row_index, determined_column_index})
+            place(n, {determined_row_index, determined_column_index})
           elsif determined_row_index
             row = @state.row(determined_row_index)
             eliminate_candidate_in_section_except_in_block(n, row, block)
