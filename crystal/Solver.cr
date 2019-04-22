@@ -12,9 +12,11 @@ module Sudoku
 
     protected property search_depth : Int32
 
-    def initialize(filename : String,
-                   debug_output_enabled : Bool = false,
-                   debug_validation_enabled : Bool = false)
+    def initialize(
+      filename : String,
+      debug_output_enabled : Bool = false,
+      debug_validation_enabled : Bool = false
+    )
       @debug_output_enabled = debug_output_enabled
       @debug_validation_enabled = debug_validation_enabled
 
@@ -189,9 +191,11 @@ module Sudoku
       {determined_row_index, determined_column_index}
     end
 
-    def eliminate_candidate_in_section_except_in_block(candidate_value : CellValue,
-                                                       section : LinearSection,
-                                                       block : Block)
+    def eliminate_candidate_in_section_except_in_block(
+      candidate_value : CellValue,
+      section : LinearSection,
+      block : Block
+    )
       # If some value will definitely go in a particular row within a block
       # but is not yet fully determined, then the two horizontally adjacent
       # blocks can eliminate that value as a candidate from all of their cells
