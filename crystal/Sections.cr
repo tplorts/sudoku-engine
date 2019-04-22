@@ -25,24 +25,24 @@ module Sudoku
       each_position { |position| yield @grid[position], position }
     end
 
-    def has?(value : CellValue)
-      @has_map[value]
+    def has?(n : CellValue)
+      @has_map[n]
     end
 
-    def place(value : CellValue)
-      raise "Hey! #{value} isn’t supposed to go in this section!" if has?(value)
-      @has_map[value] = true
-      each_cell(&.eliminate_candidate(value))
+    def place(n : CellValue)
+      raise "Hey! #{n} isn’t supposed to go in this section!" if has?(n)
+      @has_map[n] = true
+      each_cell(&.eliminate_candidate(n))
     end
 
     def valid?
       seen = BitArray.new(N + 1)
       each_cell do |cell|
-        value = cell.occupant
-        next if !value
+        n = cell.occupant
+        next if !n
 
-        return false if seen[value]
-        seen[value] = true
+        return false if seen[n]
+        seen[n] = true
       end
       return true
     end

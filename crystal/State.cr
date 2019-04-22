@@ -37,8 +37,8 @@ module Sudoku
       raw_table = File.read_lines(filename).map(&.split("").map(&.to_i?))
 
       @grid.each_position do |position|
-        value = raw_table[position[0]][position[1]]
-        place(value, position) if value
+        n = raw_table[position[0]][position[1]]
+        place(n, position) if n
       end
     end
 
@@ -60,10 +60,10 @@ module Sudoku
       [row(position), column(position), block(position)]
     end
 
-    def place(value : Int, position : Position)
-      @grid[position].place(value)
+    def place(n : Int, position : Position)
+      @grid[position].place(n)
 
-      sections_for_position(position).each(&.place(value))
+      sections_for_position(position).each(&.place(n))
 
       @empty_cell_count -= 1
     end

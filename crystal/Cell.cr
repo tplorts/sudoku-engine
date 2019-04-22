@@ -41,11 +41,11 @@ module Sudoku
       @candidates = source.candidates[0..N]
     end
 
-    def place(value : CellValue)
+    def place(n : CellValue)
       raise PlacementConflict.new(self) if occupied?
-      raise InvalidPlacement.new(self) if !candidate?(value)
+      raise InvalidPlacement.new(self) if !candidate?(n)
 
-      @occupant = value
+      @occupant = n
       @candidates = BitArray.new(N + 1, false)
     end
 
@@ -57,13 +57,13 @@ module Sudoku
       @occupant.nil?
     end
 
-    def eliminate_candidate(value : CellValue)
-      @candidates[value] = false
+    def eliminate_candidate(n : CellValue)
+      @candidates[n] = false
       raise CellContradiction.new(self) if @candidates == NO_CANDIDATES_NO_OCCUPANT
     end
 
-    def candidate?(value : CellValue)
-      unoccupied? && @candidates[value]
+    def candidate?(n : CellValue)
+      unoccupied? && @candidates[n]
     end
 
     def determined?

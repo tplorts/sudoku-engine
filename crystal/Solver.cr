@@ -99,7 +99,7 @@ module Sudoku
     end
 
     # Repeatedly searches for cells which are fully determined by their own
-    # list of candidate values.  Places the value when the cell is fully
+    # list of candidate values.  Places n when the cell is fully
     # determined.  Stops repeating when no placements were made over the course
     # of a single iteration to check the entire sudoku.
     def exhaustively_fill_determined_cells
@@ -116,30 +116,30 @@ module Sudoku
       until_complete_or_stuck { fill_determined_positions }
     end
 
-    # Searches for blocks in which there is only one candidate position for a value
-    # and places the value there if any such fully determined positions are found.
+    # Searches for blocks in which there is only one candidate position for n
+    # and places the n there if any such fully determined positions are found.
     def fill_determined_positions
-      (1..N).each do |value|
+      (1..N).each do |n|
         @state.each_block do |block|
-          candidate_positions = find_candidate_positions(value, block)
-          @state.place(value, candidate_positions[0]) if candidate_positions.size == 1
+          candidate_positions = find_candidate_positions(n, block)
+          @state.place(n, candidate_positions[0]) if candidate_positions.size == 1
         end
       end
     end
 
-    # Finds the positions of all cells into which value could be placed
-    def find_candidate_positions(value : Int, block : Block) : Array(Position)
+    # Finds the positions of all cells into which n could be placed
+    def find_candidate_positions(n : Int, block : Block) : Array(Position)
       candidates = Array(Position).new
 
-      # Rule out immediately if this Block already has the value
-      return candidates if block.has?(value)
+      # Rule out immediately if this Block already has n
+      return candidates if block.has?(n)
 
       block.each_cell_with_position do |cell, position|
-        # Skip checking whether the Block has value here since we
+        # Skip checking whether the Block has n here since we
         # already did that above, before looping through each cell
         next if cell.occupied? ||
-                @state.row(position).has?(value) ||
-                @state.column(position).has?(value)
+                @state.row(position).has?(n) ||
+                @state.column(position).has?(n)
 
         candidates << position
       end
@@ -149,39 +149,38 @@ module Sudoku
 
     def eliminate_candidates_by_partial_determination
       @state.each_block do |block|
-        (1..N).each do |value|
-          next if block.has?(value)
+        (1..N).each do |n|
+          next if block.has?(n)
 
-          determined_row_index, determined_column_index = find_determined_row_column_in_block(value, block)
+          determined_row_index, determined_column_index = find_determined_row_column_in_block(n, block)
 
           if determined_row_index && determined_column_index
-            @state.place(value, {determined_row_index, determined_column_index})
+            @state.place(n, {determined_row_index, determined_column_index})
           elsif determined_row_index
             row = @state.row(determined_row_index)
-            eliminate_candidate_in_section_except_in_block(value, row, block)
+            eliminate_candidate_in_section_except_in_block(n, row, block)
           elsif determined_column_index
             column = @state.column(determined_column_index)
-            eliminate_candidate_in_section_except_in_block(value, column, block)
+            eliminate_candidate_in_section_except_in_block(n, column, block)
           end
         end
       end
     end
 
-    def find_determined_row_column_in_block(value : CellValue, block : Block)
+    def find_determined_row_column_in_block(n : CellValue, block : Block)
       candidate_rows = Set(Int32).new
       candidate_columns = Set(Int32).new
 
-      # Find the set of rows/columns within this block which could contain
-      # value.
+      # Find the set of rows/columns within this block which could contain n.
       block.each_cell_with_position do |cell, (row_index, column_index)|
-        if cell.candidate?(value)
+        if cell.candidate?(n)
           candidate_rows.add(row_index)
           candidate_columns.add(column_index)
         end
       end
 
-      # And now, if there is only one row that could contain value in this
-      # block, then we can deduce that value cannot be placed in that row
+      # And now, if there is only one row that could contain n in this
+      # block, then we can deduce that n cannot be placed in that row
       # in the two blocks horizontally adjacent to this block.
       # And likewise, for columns and vertically adjacent blocks.
       {
