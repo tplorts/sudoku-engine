@@ -150,6 +150,8 @@ module Sudoku
     def eliminate_candidates_by_partial_determination
       @state.each_block do |block|
         (1..N).each do |value|
+          next if block.has?(value)
+
           determined_row_index, determined_column_index = find_determined_row_column_in_block(value, block)
 
           if determined_row_index && determined_column_index
@@ -166,9 +168,6 @@ module Sudoku
     end
 
     def find_determined_row_column_in_block(value : CellValue, block : Block)
-      # value can go nowhere in this block if already in the block
-      return {nil, nil} if block.has?(value)
-
       candidate_rows = Set(Int32).new
       candidate_columns = Set(Int32).new
 
