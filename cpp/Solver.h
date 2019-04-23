@@ -11,9 +11,9 @@ namespace Sudoku {
 
 class Solver {
 private:
-  State sudoku;
+  State state;
 
-  int empty_cell_count() const { return sudoku.get_empty_cell_count(); }
+  int empty_cell_count() const { return state.get_empty_cell_count(); }
 
   bool complete() { return empty_cell_count() == 0; }
 
@@ -32,7 +32,7 @@ private:
                                                       const Block& block);
 
 public:
-  Solver(const std::string& filename) { sudoku.load_from_file(filename); }
+  Solver(const std::string& filename) { state.load_from_file(filename); }
   ~Solver() {}
 
   void solve();
@@ -41,7 +41,7 @@ public:
 };
 
 inline std::ostream& operator<<(std::ostream& outs, const Solver& solver) {
-  return outs << solver.sudoku;
+  return outs << solver.state;
 }
 
 } // namespace Sudoku
