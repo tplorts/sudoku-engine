@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-I.
+CXXFLAGS=-I. -std=c++17
 DEPS=common.h read_puzzle_file.h State.h Grid.h Cell.h Section.h Row.h Column.h Block.h Position.h
 OBJ=Solver.o State.o Grid.o Cell.o Section.o read_puzzle_file.o
 

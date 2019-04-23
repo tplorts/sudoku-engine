@@ -8,55 +8,27 @@ using namespace std;
 using namespace Sudoku;
 
 void Solver::solve() {
-  int placements_made;
-
-  do {
-    int initial_empty_count = empty_cell_count();
-
+  until_complete_or_stuck([this]() {
     solve_determined();
     if (!complete()) {
       eliminate_candidates_by_partial_determination();
     }
-
-    placements_made = initial_empty_count - empty_cell_count();
-  } while (!complete() && placements_made > 0);
+  });
 }
 
 void Solver::solve_determined() {
-  int placements_made;
-
-  do {
-    int initial_empty_count = empty_cell_count();
-
+  until_complete_or_stuck([this]() {
     exhaustively_fill_determined_cells();
     exhaustively_fill_determined_positions();
-
-    placements_made = initial_empty_count - empty_cell_count();
-  } while (!complete() && placements_made > 0);
+  });
 }
 
 void Solver::exhaustively_fill_determined_cells() {
-  int placements_made;
-
-  do {
-    int initial_empty_count = empty_cell_count();
-
-    fill_determined_cells();
-
-    placements_made = initial_empty_count - empty_cell_count();
-  } while (!complete() && placements_made > 0);
+  until_complete_or_stuck([this]() { fill_determined_cells(); });
 }
 
 void Solver::exhaustively_fill_determined_positions() {
-  int placements_made;
-
-  do {
-    int initial_empty_count = empty_cell_count();
-
-    fill_determined_positions();
-
-    placements_made = initial_empty_count - empty_cell_count();
-  } while (!complete() && placements_made > 0);
+  until_complete_or_stuck([this]() { fill_determined_positions(); });
 }
 
 void Solver::fill_determined_cells() {
@@ -178,4 +150,17 @@ void Solver::eliminate_candidate_in_section_except_in_block(
   }
 
   delete iterator;
+}
+
+template <typename Operation>
+void Solver::until_complete_or_stuck(Operation operate) {
+  bool stuck = false;
+
+  while (!complete() && !stuck) {
+    int initial_empty_count = empty_cell_count();
+
+    operate();
+
+    stuck = empty_cell_count() == initial_empty_count;
+  }
 }

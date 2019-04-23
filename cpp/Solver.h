@@ -17,6 +17,8 @@ private:
 
   bool complete() { return empty_cell_count() == 0; }
 
+  template <typename Operation> void until_complete_or_stuck(Operation);
+
   void fill_determined_cells();
   void fill_determined_positions();
   void exhaustively_fill_determined_cells();
