@@ -109,6 +109,10 @@ void Solver::eliminate_candidates_by_partial_determination() {
   }
 }
 
+int only_value_or_undetermined(set<int> indices) {
+  return indices.size() == 1 ? *indices.begin() : UNDETERMINED_INDEX;
+}
+
 Position Solver::find_determined_row_column_in_block(int value,
                                                      const Block& block) {
   if (block.has(value)) {
@@ -131,10 +135,8 @@ Position Solver::find_determined_row_column_in_block(int value,
 
   delete block_iterator;
 
-  return Position(candidate_rows.size() == 1 ? *candidate_rows.begin()
-                                             : UNDETERMINED_INDEX,
-                  candidate_columns.size() == 1 ? *candidate_columns.begin()
-                                                : UNDETERMINED_INDEX);
+  return Position(only_value_or_undetermined(candidate_rows),
+                  only_value_or_undetermined(candidate_columns));
 }
 
 void Solver::eliminate_candidate_in_section_except_in_block(
