@@ -23,7 +23,8 @@ private:
   void fill_determined_positions();
   void exhaustively_fill_determined_cells();
   void exhaustively_fill_determined_positions();
-  std::vector<Position> find_candidate_positions(int value, const Block& block);
+  std::vector<Position> find_candidate_positions(int value, const Section&);
+  bool any_sections_have(const Position& position, int value);
   void solve_determined();
   void eliminate_candidates_by_partial_determination();
   Position find_determined_row_column_in_block(int value, const Block& block);

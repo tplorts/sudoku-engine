@@ -6,6 +6,7 @@
 #include "Grid.h"
 #include "Position.h"
 #include "Row.h"
+#include <array>
 #include <iostream>
 #include <string>
 
@@ -31,6 +32,8 @@ public:
   int get_empty_cell_count() const { return empty_cell_count; }
 
   void place(cell_t value, const Position& position);
+
+  const std::array<Section*, 3> sections_for_position(const Position& position);
 
   Row& row(const Position& position) { return *rows[position.row()]; }
 

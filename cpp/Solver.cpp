@@ -1,5 +1,6 @@
 #include "Solver.h"
 #include "Position.h"
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -62,21 +63,20 @@ void Solver::fill_determined_positions() {
 }
 
 vector<Position> Solver::find_candidate_positions(int value,
-                                                  const Block& block) {
+                                                  const Section& section) {
   vector<Position> candidates;
 
-  if (block.has(value)) {
+  if (section.has(value)) {
     return candidates;
   }
 
-  SectionIterator* iterator = block.get_iterator();
+  SectionIterator* iterator = section.get_iterator();
 
   while (!iterator->done()) {
     Position position = iterator->next_position();
     Cell& cell = state.cell(position);
 
-    if (!cell.occupied() && !state.row(position).has(value) &&
-        !state.column(position).has(value)) {
+    if (!cell.occupied() && !any_sections_have(position, value)) {
       candidates.push_back(position);
     }
   }
@@ -84,6 +84,13 @@ vector<Position> Solver::find_candidate_positions(int value,
   delete iterator;
 
   return candidates;
+}
+
+bool Solver::any_sections_have(const Position& position, int value) {
+  const auto sections = state.sections_for_position(position);
+
+  return any_of(sections.begin(), sections.end(),
+                [value](Section* s) { return s->has(value); });
 }
 
 void Solver::eliminate_candidates_by_partial_determination() {
