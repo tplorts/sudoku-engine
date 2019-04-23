@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { ALL_VALUES } from './core';
+import { ALL_VALUES, N } from './core';
 import GridPosition from './GridPosition';
 import { Block, LinearSection, Section } from './Sections';
 import State from './State';
@@ -15,31 +15,43 @@ const defaultOptions: SolverOptions = {
 };
 
 export default class Solver {
-  readonly state: State;
+  state: State;
   private options: SolverOptions;
+  private searchDepth = 0;
   private nestingDepth = 0;
 
-  constructor(filename: string, options = defaultOptions) {
+  constructor(filename: string, options = defaultOptions, source?: Solver) {
     this.options = {
       ...defaultOptions,
       ...options,
     };
 
-    this.state = new State();
-    this.state.loadFromFile(filename);
+    if (source) {
+      this.state = source.state.clone();
+      this.searchDepth = source.searchDepth + 1;
+    } else {
+      this.state = new State();
+      this.state.loadFromFile(filename);
+    }
+  }
+
+  clone() {
+    return new Solver('', this.options, this);
   }
 
   emptyCount = () => this.state.emptyCellCount;
   isComplete = () => this.emptyCount() === 0;
 
   place(n: number, position: GridPosition) {
-    this.log(`Placing ${n} in ${position}`);
+    // this.log(`placing ${n} in ${position}`);
     this.state.place(n, position);
+    // this.log(this.state.grid.toVerboseString());
   }
 
   log(message: string) {
     if (this.options.debugOutputEnabled) {
-      const indentation = ' >'.repeat(this.nestingDepth) + ' ';
+      const indentation = '> '.repeat(this.searchDepth);
+      // + '#'.repeat(this.nestingDepth) + ' ';
       const nestedMessage = message
         .split('\n')
         .map(line => indentation + line)
@@ -49,14 +61,71 @@ export default class Solver {
   }
 
   solve() {
+    this.log(`begin solve with ${this.emptyCount()} left`);
+
     this.untilCompleteOrStuck(() => {
       this.solveDetermined();
 
       if (!this.isComplete()) {
-        this.log(this.state.grid.toVerboseString());
+        // this.log(this.state.grid.toVerboseString());
         this.eliminateCandidatesByPartialDetermination();
       }
     }, 'solve');
+
+    this.log(`end determined solve with ${this.emptyCount()} left`);
+
+    if (this.isComplete()) {
+      return this;
+    } else {
+      if (this.searchDepth == 0) {
+        this.log('the following state is sound, before guessing begins:');
+        this.log(this.state.grid.toVerboseString());
+      }
+    }
+
+    const seedPosition = this.positionWithFewestCandidates();
+    const seedCell = this.state.grid.cell(seedPosition);
+
+    for (const candidateValue of seedCell.candidateValues()) {
+      const child = this.clone();
+
+      child.log(`guessing ${candidateValue} in ${seedPosition}`);
+      child.place(candidateValue, seedPosition);
+      try {
+        child.solve();
+        if (child.isComplete()) {
+          this.state = child.state;
+          return this;
+        }
+      } catch (error) {
+        child.log('abandoning branch; final branch state, with contradiction:');
+        child.log(child.state.grid.toVerboseString());
+        this.log('picking up from here:');
+        this.log(this.state.grid.toVerboseString());
+      }
+    }
+
+    return null;
+  }
+
+  positionWithFewestCandidates() {
+    let fewestCandidates = N + 1;
+    let chosenPosition: GridPosition | null = null;
+
+    this.state.eachCell((cell, position) => {
+      if (cell.isOccupied()) return;
+      const candidateCount = cell.candidateCount();
+      if (cell.isUnoccupied() && candidateCount < fewestCandidates) {
+        chosenPosition = position;
+        fewestCandidates = candidateCount;
+      }
+    });
+
+    if (!chosenPosition) {
+      throw new Error();
+    }
+
+    return chosenPosition;
   }
 
   solveDetermined() {
@@ -99,27 +168,21 @@ export default class Solver {
     );
   }
 
-  fillDeterminedPositions = () => {
-    ALL_VALUES.forEach(this.fillDeterminedPositionsForValue);
-  };
-
   /**
-   * Perform one sweep across the whole grid, looking for rows, columns, &
-   * blocks in which there is exactly one place to put the value `n`, and make
-   * such placements when found.
+   * Perform one sweep per value across the whole grid, looking for rows,
+   * columns, & blocks in which there is exactly one place to put the value `n`,
+   * and make such placements when found.
    */
-  fillDeterminedPositionsForValue = (n: number) => {
-    this.state.eachSection(section =>
-      this.fillDeterminedPositionsForValueIn(n, section)
-    );
-  };
-
-  fillDeterminedPositionsForValueIn = (n: number, section: Section) => {
-    const candidatePositions = this.findCandidatePositions(n, section);
-    if (candidatePositions.length === 1) {
-      this.log(`${section} position determination`);
-      this.place(n, candidatePositions[0]);
-    }
+  fillDeterminedPositions = () => {
+    ALL_VALUES.forEach(n => {
+      this.state.eachSection(section => {
+        const candidatePositions = this.findCandidatePositions(n, section);
+        if (candidatePositions.length === 1) {
+          // this.log(`${section} position determination`);
+          this.place(n, candidatePositions[0]);
+        }
+      });
+    });
   };
 
   /**
@@ -198,9 +261,9 @@ export default class Solver {
   ) {
     section.eachCell((cell, position) => {
       if (!block.includes(position)) {
-        if (cell.isCandidate(candidateValue)) {
-          this.log(`eliminate ${candidateValue} from ${position}`);
-        }
+        // if (cell.isCandidate(candidateValue)) {
+        //   this.log(`eliminate ${candidateValue} from ${position}`);
+        // }
         cell.eliminateCandidate(candidateValue);
       }
     });
@@ -209,7 +272,7 @@ export default class Solver {
   private untilCompleteOrStuck(operate: Function, label: string = '') {
     let isStuck = false;
     this.nestingDepth++;
-    this.log('Begin ' + label);
+    // this.log('Begin ' + label);
 
     while (!this.isComplete() && !isStuck) {
       const initialEmptyCount = this.emptyCount();
@@ -218,7 +281,7 @@ export default class Solver {
 
       isStuck = this.emptyCount() === initialEmptyCount;
     }
-    this.log('End ' + label);
+    // this.log('End ' + label);
     this.nestingDepth--;
   }
 }

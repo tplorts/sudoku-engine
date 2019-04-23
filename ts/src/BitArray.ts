@@ -30,6 +30,10 @@ export default class BitArray {
     }
   }
 
+  public equals(other: BitArray) {
+    return this.bits == other.bits;
+  }
+
   public toString() {
     return _.padStart(this.bits.toString(2), 10, '0');
   }

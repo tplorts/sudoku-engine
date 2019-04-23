@@ -13,6 +13,8 @@ export abstract class Section {
     this.grid = grid;
   }
 
+  public abstract clone(newGrid: Grid): Section;
+
   public abstract eachPosition(fn: (p: GridPosition) => any): void;
 
   public eachCell(fn: (c: Cell, p: GridPosition) => any) {
@@ -37,6 +39,12 @@ export abstract class LinearSection extends Section {
 }
 
 export class Row extends LinearSection {
+  clone(newGrid: Grid) {
+    const row = new Row(newGrid, this.index);
+    row.hasMap = this.hasMap.clone();
+    return row;
+  }
+
   public eachPosition(fn: (p: GridPosition) => any): void {
     _.times(N, columnIndex => fn(new GridPosition(this.index, columnIndex)));
   }
@@ -47,6 +55,12 @@ export class Row extends LinearSection {
 }
 
 export class Column extends LinearSection {
+  clone(newGrid: Grid) {
+    const column = new Column(newGrid, this.index);
+    column.hasMap = this.hasMap.clone();
+    return column;
+  }
+
   public eachPosition(fn: (p: GridPosition) => any): void {
     _.times(N, rowIndex => fn(new GridPosition(rowIndex, this.index)));
   }
@@ -64,6 +78,14 @@ export class Block extends Section {
     super(grid);
     this.baseRowIndex = blockRowIndex * B;
     this.baseColumnIndex = blockColumnIndex * B;
+  }
+
+  clone(newGrid: Grid) {
+    const block = new Block(newGrid, 0, 0);
+    block.baseRowIndex = this.baseRowIndex;
+    block.baseColumnIndex = this.baseColumnIndex;
+    block.hasMap = this.hasMap.clone();
+    return block;
   }
 
   public eachPosition(fn: (p: GridPosition) => any): void {

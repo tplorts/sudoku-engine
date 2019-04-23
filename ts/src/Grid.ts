@@ -10,8 +10,16 @@ const verboseFormatter = new GridFormatter(N, cell => cell.toVerboseString());
 export default class Grid {
   private table: Cell[][];
 
-  constructor() {
-    this.table = _.times(N, () => _.times(N, () => new Cell()));
+  constructor(source?: Grid) {
+    const createCell = source
+      ? (r: number, c: number) => source.cell(new GridPosition(r, c)).clone()
+      : () => new Cell();
+
+    this.table = _.times(N, r => _.times(N, c => createCell(r, c)));
+  }
+
+  clone() {
+    return new Grid(this);
   }
 
   cell = (position: GridPosition) => this.table[position.row][position.column];

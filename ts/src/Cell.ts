@@ -2,9 +2,19 @@ import _ from 'lodash';
 import BitArray from './BitArray';
 import { ALL_VALUES, CellOccupant } from './core';
 
+const NO_CANDIDATES_NO_OCCUPANT = new BitArray();
+NO_CANDIDATES_NO_OCCUPANT.set(0, true);
+
 export default class Cell {
   occupant: CellOccupant = null;
   candidates = new BitArray(true);
+
+  clone() {
+    const cell = new Cell();
+    cell.occupant = this.occupant;
+    cell.candidates = this.candidates.clone();
+    return cell;
+  }
 
   place(value: number) {
     this.occupant = value;
@@ -18,16 +28,23 @@ export default class Cell {
 
   eliminateCandidate(value: number) {
     this.candidates.set(value, false);
+    if (this.candidates.equals(NO_CANDIDATES_NO_OCCUPANT)) {
+      throw new Error();
+    }
   }
 
   candidateCount() {
     return _.sumBy(ALL_VALUES, n => (this.isCandidate(n) ? 1 : 0));
   }
 
+  candidateValues() {
+    return _.filter(ALL_VALUES, n => this.isCandidate(n));
+  }
+
   firstCandidate() {
     const candidate = _.find(ALL_VALUES, n => this.isCandidate(n));
     if (_.isNil(candidate)) {
-      throw Error(); // TODO
+      throw new Error();
     }
     return Number(candidate);
   }

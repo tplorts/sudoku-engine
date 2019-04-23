@@ -14,15 +14,30 @@ export default class State {
   columns: Column[];
   blocks: Block[][];
 
-  constructor() {
-    this.grid = new Grid();
-    this.emptyCellCount = N * N;
+  constructor(source?: State) {
+    if (source) {
+      this.grid = source.grid.clone();
+      this.emptyCellCount = source.emptyCellCount;
 
-    this.rows = _.times(N, i => new Row(this.grid, i));
-    this.columns = _.times(N, i => new Column(this.grid, i));
-    this.blocks = _.times(B, br =>
-      _.times(B, bc => new Block(this.grid, br, bc))
-    );
+      this.rows = source.rows.map(row => row.clone(this.grid));
+      this.columns = source.columns.map(column => column.clone(this.grid));
+      this.blocks = source.blocks.map(blockRow =>
+        blockRow.map(block => block.clone(this.grid))
+      );
+    } else {
+      this.grid = new Grid();
+      this.emptyCellCount = N * N;
+
+      this.rows = _.times(N, i => new Row(this.grid, i));
+      this.columns = _.times(N, i => new Column(this.grid, i));
+      this.blocks = _.times(B, br =>
+        _.times(B, bc => new Block(this.grid, br, bc))
+      );
+    }
+  }
+
+  clone() {
+    return new State(this);
   }
 
   public loadFromFile(filename: string) {
