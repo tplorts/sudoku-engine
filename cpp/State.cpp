@@ -1,7 +1,6 @@
 #include "State.h"
 #include "Position.h"
 #include "read_puzzle_file.h"
-#include <algorithm>
 #include <array>
 
 using namespace Sudoku;
@@ -48,9 +47,9 @@ void State::load_from_file(const std::string& filename) {
 void State::place(cell_t value, const Position& position) {
   grid(position).place(value);
 
-  const auto sections = sections_for_position(position);
-  for_each(sections.begin(), sections.end(),
-           [value](Section* s) { return s->place(value); });
+  for (Section* section : sections_for_position(position)) {
+    section->place(value);
+  }
 
   empty_cell_count--;
 }
