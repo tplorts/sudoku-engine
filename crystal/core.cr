@@ -8,5 +8,8 @@ module Sudoku
   alias Position = {Int32, Int32}
 
   class InvalidError < Exception
+    def to_s
+      "generally invalid sudoku error"
+    end
   end
 end

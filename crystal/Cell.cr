@@ -9,17 +9,26 @@ module Sudoku
     end
 
     def to_s
-      cell.inspect
+      "invalid cell: #{cell.inspect}"
     end
   end
 
   class CellContradiction < InvalidCellError
+    def to_s
+      "cell contradiction in #{cell.inspect}"
+    end
   end
 
   class PlacementConflict < InvalidCellError
+    def to_s
+      "placement conflict in #{cell.inspect}"
+    end
   end
 
   class InvalidPlacement < InvalidCellError
+    def to_s
+      "invalid placement in #{cell.inspect}"
+    end
   end
 
   ALL_CANDIDATES            = BitArray.new(N + 1, true)
@@ -70,8 +79,8 @@ module Sudoku
       unoccupied? && candidate_count == 1
     end
 
-    private def candidate_count
-      (1..N).count { |n| candidate?(n) }
+    def candidate_count
+      (1..N).count { |n| @candidates[n] }
     end
 
     def candidate_values

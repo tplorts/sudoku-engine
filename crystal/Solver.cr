@@ -11,6 +11,7 @@ module Sudoku
     protected property debug_validation_enabled : Bool
 
     protected property search_depth : Int32
+    protected property nesting_depth = 0
 
     def initialize(
       filename : String,
@@ -40,6 +41,7 @@ module Sudoku
     def log
       if @debug_output_enabled
         indentation = "> " * @search_depth
+        # + "#" * @nesting_depth + " "
 
         message = yield
 
@@ -69,17 +71,19 @@ module Sudoku
     def place(n : Int, position : Position)
       # log { "placing #{n} in #{position}" }
       @state.place(n, position)
+      # log { state.grid.to_verbose_s }
     end
 
     def solve
       log { "begin solve with #{empty_count} left" }
 
-      until_complete_or_stuck do
+      until_complete_or_stuck("solve") do
         solve_determined
         eliminate_candidates_by_partial_determination unless complete?
       end
 
-      log { "end solve with #{empty_count} left" }
+      log { "end determined solve with #{empty_count} left" }
+
       if !complete?
         if @search_depth == 0
           log { "the following state is sound, before guessing begins:" }
@@ -89,25 +93,24 @@ module Sudoku
 
       return self if complete?
 
-      @state.each_cell_with_position do |cell, position|
-        next if cell.occupied?
+      seed_position = position_with_fewest_candidates
+      seed_cell = @state.grid[seed_position]
 
-        cell.candidate_values.each do |candidate_value|
-          child = Solver.new(self)
-          child.log { "guessing #{candidate_value} in #{position}" }
-          child.place(candidate_value, position)
-          begin
-            child.solve
-            if child.complete?
-              @state = child.state
-              return self
-            end
-          rescue error : InvalidError
-            child.log { "abandoning branch; final branch state (contains contradiction):" }
-            child.log { child.state.grid.to_verbose_s }
-            log { "picking up from here:" }
-            log { @state.grid.to_verbose_s }
+      seed_cell.candidate_values.each do |candidate_value|
+        child = Solver.new(self)
+        child.log { "guessing #{candidate_value} in #{seed_position}" }
+        child.place(candidate_value, seed_position)
+        begin
+          child.solve
+          if child.complete?
+            @state = child.state
+            return self
           end
+        rescue error : InvalidError
+          child.log { "abandoning branch; final branch state, with contradiction:" }
+          child.log { child.state.grid.to_verbose_s }
+          log { "picking up from here:" }
+          log { @state.grid.to_verbose_s }
         end
       end
 
@@ -116,8 +119,27 @@ module Sudoku
       nil
     end
 
+    def position_with_fewest_candidates
+      fewest_candidates = N + 1
+      chosen_position = nil
+
+      @state.each_cell_with_position do |cell, position|
+        next if cell.occupied?
+
+        candidate_count = cell.candidate_count
+        if cell.unoccupied? && candidate_count < fewest_candidates
+          chosen_position = position
+          fewest_candidates = candidate_count
+        end
+      end
+
+      raise InvalidError.new if chosen_position.nil?
+
+      chosen_position
+    end
+
     def solve_determined
-      until_complete_or_stuck do
+      until_complete_or_stuck("solve_determined") do
         exhaustively_fill_determined_cells
         exhaustively_fill_determined_positions
       end
@@ -128,7 +150,9 @@ module Sudoku
     # determined.  Stops repeating when no placements were made over the course
     # of a single iteration to check the entire sudoku.
     def exhaustively_fill_determined_cells
-      until_complete_or_stuck { fill_determined_cells }
+      until_complete_or_stuck("exhaustively_fill_determined_cells") {
+        fill_determined_cells
+      }
     end
 
     def fill_determined_cells
@@ -138,7 +162,9 @@ module Sudoku
     end
 
     def exhaustively_fill_determined_positions
-      until_complete_or_stuck { fill_determined_positions }
+      until_complete_or_stuck("exhaustively_fill_determined_positions") {
+        fill_determined_positions
+      }
     end
 
     # Searches for blocks in which there is only one candidate position for n
@@ -234,13 +260,19 @@ module Sudoku
       end
     end
 
-    def until_complete_or_stuck
+    def until_complete_or_stuck(label : String = "")
       stuck? = false
+      @nesting_depth += 1
+      # log { "Begin #{label}" }
+
       until complete? || stuck?
         initial_empty_count = empty_count
         yield
         stuck? = empty_count == initial_empty_count
       end
+
+      # log { "End #{label}" }
+      @nesting_depth -= 1
     end
 
     def only_value_or_nil(set : Set)

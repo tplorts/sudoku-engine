@@ -2,7 +2,7 @@ require "./Solver"
 
 solver = Sudoku::Solver.new(
   "../puzzles/20190220c.sudoku",
-  # debug_output_enabled: true,
+  debug_output_enabled: true,
   # debug_validation_enabled: true
 )
 
