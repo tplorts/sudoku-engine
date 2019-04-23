@@ -70,18 +70,12 @@ vector<Position> Solver::find_candidate_positions(int value,
     return candidates;
   }
 
-  SectionIterator* iterator = section.get_iterator();
-
-  while (!iterator->done()) {
-    Position position = iterator->next_position();
-    Cell& cell = state.cell(position);
-
-    if (!cell.occupied() && !any_sections_have(position, value)) {
-      candidates.push_back(position);
-    }
-  }
-
-  delete iterator;
+  section.each_cell_with_position(
+      [&](Cell& cell, const Position& position) mutable {
+        if (!cell.occupied() && !any_sections_have(position, value)) {
+          candidates.push_back(position);
+        }
+      });
 
   return candidates;
 }
@@ -129,18 +123,13 @@ Position Solver::find_determined_row_column_in_block(int value,
   set<int> candidate_rows;
   set<int> candidate_columns;
 
-  SectionIterator* block_iterator = block.get_iterator();
-
-  while (!block_iterator->done()) {
-    Position position = block_iterator->next_position();
-
-    if (state.cell(position).is_candidate(value)) {
-      candidate_rows.insert(position.row());
-      candidate_columns.insert(position.column());
-    }
-  }
-
-  delete block_iterator;
+  block.each_cell_with_position(
+      [&](Cell& cell, const Position& position) mutable {
+        if (cell.is_candidate(value)) {
+          candidate_rows.insert(position.row());
+          candidate_columns.insert(position.column());
+        }
+      });
 
   return Position(only_value_or_undetermined(candidate_rows),
                   only_value_or_undetermined(candidate_columns));
@@ -148,17 +137,12 @@ Position Solver::find_determined_row_column_in_block(int value,
 
 void Solver::eliminate_candidate_in_section_except_in_block(
     int value, const Section& section, const Block& block) {
-  SectionIterator* iterator = section.get_iterator();
 
-  while (!iterator->done()) {
-    Position position = iterator->next_position();
-
+  section.each_cell_with_position([&](Cell& cell, const Position& position) {
     if (!block.includes(position)) {
-      state.cell(position).eliminate_candidate(value);
+      cell.eliminate_candidate(value);
     }
-  }
-
-  delete iterator;
+  });
 }
 
 template <typename Operation>

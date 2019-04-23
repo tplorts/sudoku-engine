@@ -8,17 +8,6 @@
 
 namespace Sudoku {
 
-class RowIterator : public SectionIterator {
-private:
-  const int row_index;
-
-public:
-  RowIterator(const Grid& grid, int row_index)
-      : SectionIterator(grid), row_index(row_index) {}
-
-  Position next_position() { return Position(row_index, next_index++); }
-};
-
 class Row : public Section {
 private:
   const int row_index;
@@ -28,8 +17,10 @@ public:
 
   ~Row() {}
 
-  SectionIterator* get_iterator() const {
-    return new RowIterator(grid, row_index);
+  void each_position(PositionFunction operate) const {
+    for (int column_index = 0; column_index < N; column_index++) {
+      operate(Position(row_index, column_index));
+    }
   }
 };
 

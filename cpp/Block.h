@@ -8,22 +8,6 @@
 
 namespace Sudoku {
 
-class BlockIterator : public SectionIterator {
-private:
-  const Position& base;
-
-  Position next_subposition() {
-    const int index = next_index++;
-    return Position(index / B, index % B);
-  }
-
-public:
-  BlockIterator(const Grid& grid, const Position& base)
-      : SectionIterator(grid), base(base) {}
-
-  Position next_position() { return base + next_subposition(); }
-};
-
 class Block : public Section {
 private:
   const Position base;
@@ -33,10 +17,6 @@ public:
       : Section(grid), base(block_row_index * B, block_column_index * B) {}
 
   ~Block() {}
-
-  SectionIterator* get_iterator() const {
-    return new BlockIterator(grid, base);
-  }
 
   bool includes_row(int row) const {
     return base.row() <= row && row < (base.row() + B);
@@ -48,6 +28,14 @@ public:
 
   bool includes(const Position& position) const {
     return includes_row(position.row()) && includes_column(position.column());
+  }
+
+  void each_position(PositionFunction operate) const {
+    for (int subrow_index = 0; subrow_index < B; subrow_index++) {
+      for (int subcolumn_index = 0; subcolumn_index < B; subcolumn_index++) {
+        operate(base + Position(subrow_index, subcolumn_index));
+      }
+    }
   }
 };
 

@@ -6,25 +6,13 @@
 #include "Position.h"
 #include "common.h"
 #include <bitset>
+#include <functional>
 
 namespace Sudoku {
 
-class SectionIterator {
-protected:
-  const Grid& grid;
-  int next_index;
-
-public:
-  SectionIterator(const Grid& grid) : grid(grid), next_index(0) {}
-
-  virtual ~SectionIterator(){};
-
-  virtual Position next_position() = 0;
-
-  Cell& next() { return (Cell&)grid(next_position()); }
-
-  bool done() const { return next_index >= N; }
-};
+typedef std::function<void(const Position&)> PositionFunction;
+typedef std::function<void(Cell&)> CellFunction;
+typedef std::function<void(Cell&, const Position&)> CellPositionFunction;
 
 class Section {
 protected:
@@ -42,9 +30,11 @@ public:
 
   bool has(const cell_t value) const { return has_map[value]; };
 
-  virtual SectionIterator* get_iterator() const = 0;
-
   void place(const cell_t value);
+
+  virtual void each_position(PositionFunction) const = 0;
+  void each_cell(CellFunction) const;
+  void each_cell_with_position(CellPositionFunction) const;
 };
 
 } // namespace Sudoku

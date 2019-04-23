@@ -6,10 +6,17 @@ using namespace Sudoku;
 void Section::place(const cell_t value) {
   has_map[value] = true;
 
-  SectionIterator* iterator = get_iterator();
-  while (!iterator->done()) {
-    iterator->next().eliminate_candidate(value);
-  }
+  each_cell([value](Cell& cell) { cell.eliminate_candidate(value); });
+}
 
-  delete iterator;
+void Section::each_cell(CellFunction operate) const {
+  each_position([this, operate](const Position& position) {
+    operate((Cell&)grid(position));
+  });
+}
+
+void Section::each_cell_with_position(CellPositionFunction operate) const {
+  each_position([this, operate](const Position& position) {
+    operate((Cell&)grid(position), position);
+  });
 }
