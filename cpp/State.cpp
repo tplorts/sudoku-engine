@@ -55,9 +55,9 @@ void State::place(cell_t value, const Position& position) {
   empty_cell_count--;
 }
 
-const array<Section*, 3>
+const array<Section*, State::SECTIONS_PER_POSITION>
 State::sections_for_position(const Position& position) {
-  return array<Section*, 3>{
+  return array<Section*, SECTIONS_PER_POSITION>{
       &row(position),
       &column(position),
       &block(position),

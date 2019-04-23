@@ -14,6 +14,8 @@ namespace Sudoku {
 
 class State {
 private:
+  static const int SECTIONS_PER_POSITION = 3;
+
   Grid grid;
   int empty_cell_count;
 
@@ -33,7 +35,8 @@ public:
 
   void place(cell_t value, const Position& position);
 
-  const std::array<Section*, 3> sections_for_position(const Position& position);
+  const std::array<Section*, SECTIONS_PER_POSITION>
+  sections_for_position(const Position& position);
 
   Row& row(const Position& position) { return *rows[position.row()]; }
 
