@@ -15,6 +15,8 @@ private:
 public:
   Column(const Grid& grid, int column_index)
       : Section(grid), column_index(column_index) {}
+  Column(const Grid& grid, const Column& source)
+      : Section(grid, source), column_index(source.column_index) {}
 
   ~Column() {}
 

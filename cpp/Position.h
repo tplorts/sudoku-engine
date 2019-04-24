@@ -10,8 +10,8 @@ const int UNDETERMINED_INDEX = std::numeric_limits<int>::max();
 
 class Position {
 private:
-  const int row_index;
-  const int column_index;
+  int row_index;
+  int column_index;
 
 public:
   static Position undetermined() {

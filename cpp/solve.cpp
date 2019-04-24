@@ -5,7 +5,7 @@ using namespace std;
 using namespace Sudoku;
 
 int main() {
-  Solver solver("../puzzles/20190220b.sudoku");
+  Solver solver("../puzzles/20190220c.sudoku");
 
   cout << "Before:" << endl << solver << endl;
 

@@ -12,6 +12,8 @@
 
 namespace Sudoku {
 
+typedef std::function<void(Section&)> SectionFunction;
+
 class State {
 private:
   static const int SECTIONS_PER_POSITION = 3;
@@ -25,6 +27,8 @@ private:
 
 public:
   State();
+  State(const State& source);
+
   ~State();
 
   void load_from_file(const std::string& filename);
@@ -37,6 +41,8 @@ public:
 
   const std::array<Section*, SECTIONS_PER_POSITION>
   sections_for_position(const Position& position);
+
+  void each_section(SectionFunction);
 
   Row& row(const Position& position) { return *rows[position.row()]; }
 

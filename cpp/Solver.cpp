@@ -1,6 +1,7 @@
 #include "Solver.h"
 #include "Position.h"
 #include <algorithm>
+#include <iostream>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,6 +16,48 @@ void Solver::solve() {
       eliminate_candidates_by_partial_determination();
     }
   });
+
+  if (complete()) {
+    return;
+  }
+
+  const Position seed_position = position_with_fewest_candidates();
+  Cell& seed_cell = state->cell(seed_position);
+
+  for (cell_t candidate_value : seed_cell.candidate_values()) {
+    Solver child(*this);
+    child.place(candidate_value, seed_position);
+    try {
+      child.solve();
+      if (child.complete()) {
+        delete state;
+        state = child.state;
+        child.state = NULL;
+        return;
+      }
+    } catch (const CellContradiction& e) {
+    }
+  }
+}
+
+Position Solver::position_with_fewest_candidates() {
+  int fewest_candidates = N + 1;
+  Position chosen_position(0, 0);
+
+  for (int row_index = 0; row_index < N; row_index++) {
+    for (int column_index = 0; column_index < N; column_index++) {
+      Position position(row_index, column_index);
+      Cell& cell = state->cell(position);
+
+      int candidate_count = cell.candidate_count();
+      if (!cell.occupied() && candidate_count < fewest_candidates) {
+        chosen_position = position;
+        fewest_candidates = candidate_count;
+      }
+    }
+  }
+
+  return chosen_position;
 }
 
 void Solver::solve_determined() {
@@ -36,10 +79,10 @@ void Solver::fill_determined_cells() {
   for (int row_index = 0; row_index < N; row_index++) {
     for (int column_index = 0; column_index < N; column_index++) {
       Position position(row_index, column_index);
-      Cell& cell = state.cell(position);
+      Cell& cell = state->cell(position);
 
       if (cell.determined()) {
-        state.place(cell.first_candidate(), position);
+        place(cell.first_candidate(), position);
       }
     }
   }
@@ -47,15 +90,23 @@ void Solver::fill_determined_cells() {
 
 void Solver::fill_determined_positions() {
   for (int value = 1; value <= N; value++) {
+    state->each_section([value, this](Section& section) {
+      vector<Position> candidate_positions =
+          find_candidate_positions(value, section);
+
+      if (candidate_positions.size() == 1) {
+        place(value, candidate_positions[0]);
+      }
+    });
     for (int block_row_index = 0; block_row_index < B; block_row_index++) {
       for (int block_column_index = 0; block_column_index < B;
            block_column_index++) {
-        Block& block = state.block(block_row_index, block_column_index);
+        Block& block = state->block(block_row_index, block_column_index);
         vector<Position> candidate_positions =
             find_candidate_positions(value, block);
 
         if (candidate_positions.size() == 1) {
-          state.place(value, candidate_positions[0]);
+          place(value, candidate_positions[0]);
         }
       }
     }
@@ -81,7 +132,7 @@ vector<Position> Solver::find_candidate_positions(int value,
 }
 
 bool Solver::any_sections_have(const Position& position, int value) {
-  const auto sections = state.sections_for_position(position);
+  const auto sections = state->sections_for_position(position);
 
   return any_of(sections.begin(), sections.end(),
                 [value](Section* s) { return s->has(value); });
@@ -91,18 +142,18 @@ void Solver::eliminate_candidates_by_partial_determination() {
   for (int block_row_index = 0; block_row_index < B; block_row_index++) {
     for (int block_column_index = 0; block_column_index < B;
          block_column_index++) {
-      Block& block = state.block(block_row_index, block_column_index);
+      Block& block = state->block(block_row_index, block_column_index);
 
       for (int value = 1; value <= N; value++) {
         Position position = find_determined_row_column_in_block(value, block);
 
         if (position.is_row_determined() && position.is_column_determined()) {
-          state.place(value, position);
+          place(value, position);
         } else if (position.is_row_determined()) {
-          const Row& row = state.row(position);
+          const Row& row = state->row(position);
           eliminate_candidate_in_section_except_in_block(value, row, block);
         } else if (position.is_column_determined()) {
-          const Column& column = state.column(position);
+          const Column& column = state->column(position);
           eliminate_candidate_in_section_except_in_block(value, column, block);
         }
       }

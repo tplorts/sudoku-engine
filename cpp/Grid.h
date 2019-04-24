@@ -14,6 +14,8 @@ private:
 
 public:
   Grid() {}
+  Grid(const Grid& source);
+
   ~Grid() {}
 
   Cell& operator()(int row_index, int column_index) {

@@ -14,6 +14,8 @@ private:
 
 public:
   Row(const Grid& grid, int row_index) : Section(grid), row_index(row_index) {}
+  Row(const Grid& grid, const Row& source)
+      : Section(grid, source), row_index(source.row_index) {}
 
   ~Row() {}
 

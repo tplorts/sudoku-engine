@@ -16,6 +16,9 @@ public:
   Block(const Grid& grid, int block_row_index, int block_column_index)
       : Section(grid), base(block_row_index * B, block_column_index * B) {}
 
+  Block(const Grid& grid, const Block& source)
+      : Section(grid, source), base(source.base) {}
+
   ~Block() {}
 
   bool includes_row(int row) const {

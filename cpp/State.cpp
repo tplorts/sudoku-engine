@@ -6,7 +6,7 @@
 using namespace Sudoku;
 using namespace std;
 
-State::State() : empty_cell_count(0) {
+State::State() : empty_cell_count(N * N) {
   for (int i = 0; i < N; i++) {
     rows[i] = new Row(grid, i);
     columns[i] = new Column(grid, i);
@@ -14,6 +14,19 @@ State::State() : empty_cell_count(0) {
   for (int i = 0; i < B; i++) {
     for (int j = 0; j < B; j++) {
       blocks[i][j] = new Block(grid, i, j);
+    }
+  }
+}
+
+State::State(const State& source)
+    : empty_cell_count(source.empty_cell_count), grid(source.grid) {
+  for (int i = 0; i < N; i++) {
+    rows[i] = new Row(grid, *source.rows[i]);
+    columns[i] = new Column(grid, *source.columns[i]);
+  }
+  for (int i = 0; i < B; i++) {
+    for (int j = 0; j < B; j++) {
+      blocks[i][j] = new Block(grid, *source.blocks[i][j]);
     }
   }
 }
@@ -61,4 +74,20 @@ State::sections_for_position(const Position& position) {
       &column(position),
       &block(position),
   };
+}
+
+void State::each_section(SectionFunction operate) {
+  for (int i = 0; i < N; i++) {
+    operate(*rows[i]);
+  }
+
+  for (int i = 0; i < N; i++) {
+    operate(*columns[i]);
+  }
+
+  for (int i = 0; i < B; i++) {
+    for (int j = 0; j < B; j++) {
+      operate(*blocks[i][j]);
+    }
+  }
 }

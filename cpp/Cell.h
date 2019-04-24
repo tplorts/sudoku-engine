@@ -4,10 +4,17 @@
 #include "common.h"
 #include <bitset>
 #include <iostream>
+#include <stdexcept>
+#include <vector>
 
 namespace Sudoku {
 
 typedef int cell_t;
+
+class CellContradiction : public std::logic_error {
+public:
+  CellContradiction() : std::logic_error("cell contradiction") {}
+};
 
 class Cell {
 private:
@@ -22,6 +29,9 @@ public:
     candidates.set();
   }
 
+  Cell(const Cell& source)
+      : value(source.value), candidates(source.candidates) {}
+
   ~Cell() {}
 
   cell_t get_value() const { return value; }
@@ -32,13 +42,15 @@ public:
 
   void place(cell_t new_value);
 
-  void eliminate_candidate(cell_t candidate_value) {
-    candidates.reset(candidate_value - 1);
-  }
+  void eliminate_candidate(cell_t candidate_value);
 
   bool determined() const { return !occupied() && candidates.count() == 1; }
 
   cell_t first_candidate() const;
+
+  int candidate_count() const { return candidates.count(); }
+
+  std::vector<cell_t> candidate_values() const;
 
   friend std::ostream& operator<<(std::ostream& outs, const Cell& cell) {
     return cell.occupied() ? (outs << cell.get_value()) : (outs << ' ');

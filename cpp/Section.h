@@ -26,6 +26,9 @@ protected:
 
 public:
   Section(const Grid& grid) : grid(grid) {}
+  Section(const Grid& grid, const Section& source)
+      : grid(grid), has_map(source.has_map) {}
+
   ~Section() {}
 
   bool has(const cell_t value) const { return has_map[value]; };

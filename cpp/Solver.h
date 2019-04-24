@@ -11,13 +11,19 @@ namespace Sudoku {
 
 class Solver {
 private:
-  State state;
+  State* state;
 
-  int empty_cell_count() const { return state.get_empty_cell_count(); }
+  int empty_cell_count() const { return state->get_empty_cell_count(); }
 
   bool complete() { return empty_cell_count() == 0; }
 
+  void place(cell_t value, const Position& position) {
+    state->place(value, position);
+  }
+
   template <typename Operation> void until_complete_or_stuck(Operation);
+
+  Position position_with_fewest_candidates();
 
   void fill_determined_cells();
   void fill_determined_positions();
@@ -33,8 +39,17 @@ private:
                                                       const Block& block);
 
 public:
-  Solver(const std::string& filename) { state.load_from_file(filename); }
-  ~Solver() {}
+  Solver(const std::string& filename) : state(new State()) {
+    state->load_from_file(filename);
+  }
+
+  Solver(const Solver& source) : state(new State(*source.state)) {}
+
+  ~Solver() {
+    if (state != NULL) {
+      delete state;
+    }
+  }
 
   void solve();
 
@@ -42,7 +57,7 @@ public:
 };
 
 inline std::ostream& operator<<(std::ostream& outs, const Solver& solver) {
-  return outs << solver.state;
+  return outs << *solver.state;
 }
 
 } // namespace Sudoku
