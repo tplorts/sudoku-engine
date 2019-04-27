@@ -12,5 +12,8 @@ debug: solve
 solve: solve.cpp $(OBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
+time: time.cpp fs.o $(OBJ)
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
 clean:
 	rm -r *.o solve *.dSYM
