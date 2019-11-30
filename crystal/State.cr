@@ -95,7 +95,7 @@ module Sudoku
     end
 
     def block(position : Position)
-      @blocks[position[0] / B][position[1] / B]
+      @blocks[position[0] // B][position[1] // B]
     end
 
     def valid?
