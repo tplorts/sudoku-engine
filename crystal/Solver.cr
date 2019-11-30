@@ -261,14 +261,14 @@ module Sudoku
     end
 
     def until_complete_or_stuck(label : String = "")
-      stuck? = false
+      stuck = false
       @nesting_depth += 1
       # log { "Begin #{label}" }
 
-      until complete? || stuck?
+      until complete? || stuck
         initial_empty_count = empty_count
         yield
-        stuck? = empty_count == initial_empty_count
+        stuck = empty_count == initial_empty_count
       end
 
       # log { "End #{label}" }

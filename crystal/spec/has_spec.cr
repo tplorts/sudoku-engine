@@ -49,10 +49,10 @@ describe State do
       numbers_in_row = row_sets[i]
 
       (1..N).each do |n|
-        in_row? = numbers_in_row.includes? n
+        in_row = numbers_in_row.includes? n
 
-        it "should report that #{n} is #{in_row? ? "present" : "absent"} in row #{i}" do
-          this_row.has?(n).should eq in_row?
+        it "should report that #{n} is #{in_row ? "present" : "absent"} in row #{i}" do
+          this_row.has?(n).should eq in_row
         end
       end
     end
@@ -66,10 +66,10 @@ describe State do
       numbers_in_column = column_sets[i]
 
       (1..N).each do |n|
-        in_column? = numbers_in_column.includes? n
+        in_column = numbers_in_column.includes? n
 
-        it "should report that #{n} is #{in_column? ? "present" : "absent"} in column #{i}" do
-          this_column.has?(n).should eq in_column?
+        it "should report that #{n} is #{in_column ? "present" : "absent"} in column #{i}" do
+          this_column.has?(n).should eq in_column
         end
       end
     end
@@ -87,10 +87,10 @@ describe State do
           .to_set
 
         (1..N).each do |n|
-          present? = numbers_in_block.includes? n
+          present = numbers_in_block.includes? n
 
-          it "should report that #{n} is #{present? ? "present" : "absent"} in block (#{sri}, #{sci})" do
-            this_block.has?(n).should eq present?
+          it "should report that #{n} is #{present ? "present" : "absent"} in block (#{sri}, #{sci})" do
+            this_block.has?(n).should eq present
           end
         end
       end
