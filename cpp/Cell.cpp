@@ -1,6 +1,8 @@
 #include "Cell.h"
 #include "common.h"
 #include <iostream>
+#include <random>
+#include <algorithm>
 #include <vector>
 
 using namespace std;
@@ -43,5 +45,14 @@ vector<cell_t> Cell::candidate_values() const {
     }
   }
 
+  return candidates;
+}
+
+random_device rd;
+mt19937 random_generator(rd());
+
+vector<cell_t> Cell::shuffled_candidate_values() const {
+  auto candidates = candidate_values();
+  shuffle(candidates.begin(), candidates.end(), random_generator);
   return candidates;
 }

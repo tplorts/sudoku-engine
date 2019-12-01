@@ -12,7 +12,15 @@ debug: solve
 solve: solve.cpp $(OBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
-time: time.cpp fs.o $(OBJ)
+generate: generate.cpp $(OBJ)
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
+time: time_solve time_generate
+
+time_solve: time_solve.cpp fs.o $(OBJ)
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
+time_generate: time_generate.cpp $(OBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 clean:

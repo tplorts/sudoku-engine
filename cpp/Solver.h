@@ -12,6 +12,7 @@ namespace Sudoku {
 class Solver {
 private:
   State* state;
+  const bool shuffle_candidate_values;
 
   int empty_cell_count() const { return state->get_empty_cell_count(); }
 
@@ -25,6 +26,7 @@ private:
 
   Position position_with_fewest_candidates();
 
+  std::vector<cell_t> get_candidate_values(const Cell& cell);
   void fill_determined_cells();
   void fill_determined_positions();
   void exhaustively_fill_determined_cells();
@@ -39,11 +41,16 @@ private:
                                                       const Block& block);
 
 public:
-  Solver(const std::string& filename) : state(new State()) {
+  Solver() : state(new State()), shuffle_candidate_values(true) {}
+
+  Solver(const std::string& filename)
+      : state(new State()), shuffle_candidate_values(false) {
     state->load_from_file(filename);
   }
 
-  Solver(const Solver& source) : state(new State(*source.state)) {}
+  Solver(const Solver& source)
+      : state(new State(*source.state)),
+        shuffle_candidate_values(source.shuffle_candidate_values) {}
 
   ~Solver() {
     if (state != NULL) {
@@ -52,6 +59,8 @@ public:
   }
 
   void solve();
+
+  static State generate();
 
   friend std::ostream& operator<<(std::ostream& outs, const Solver& solver);
 };

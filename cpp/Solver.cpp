@@ -9,6 +9,12 @@
 using namespace std;
 using namespace Sudoku;
 
+State Solver::generate() {
+  Solver engine;
+  engine.solve();
+  return *engine.state;
+}
+
 void Solver::solve() {
   until_complete_or_stuck([this]() {
     solve_determined();
@@ -22,9 +28,9 @@ void Solver::solve() {
   }
 
   const Position seed_position = position_with_fewest_candidates();
-  Cell& seed_cell = state->cell(seed_position);
+  const Cell& seed_cell = state->cell(seed_position);
 
-  for (cell_t candidate_value : seed_cell.candidate_values()) {
+  for (cell_t candidate_value : get_candidate_values(seed_cell)) {
     Solver child(*this);
     child.place(candidate_value, seed_position);
     try {
@@ -38,6 +44,11 @@ void Solver::solve() {
     } catch (const CellContradiction& e) {
     }
   }
+}
+
+vector<cell_t> Solver::get_candidate_values(const Cell& cell) {
+  return shuffle_candidate_values ? cell.shuffled_candidate_values()
+                                  : cell.candidate_values();
 }
 
 Position Solver::position_with_fewest_candidates() {

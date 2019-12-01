@@ -51,6 +51,7 @@ public:
   int candidate_count() const { return candidates.count(); }
 
   std::vector<cell_t> candidate_values() const;
+  std::vector<cell_t> shuffled_candidate_values() const;
 
   friend std::ostream& operator<<(std::ostream& outs, const Cell& cell) {
     return cell.occupied() ? (outs << cell.get_value()) : (outs << ' ');
