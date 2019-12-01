@@ -1,0 +1,6 @@
+*.dwarf
+
+generate
+solve
+time_generate
+time_solve

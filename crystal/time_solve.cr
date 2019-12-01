@@ -24,7 +24,7 @@ durations_map = file_paths
 end
 
 averages = durations_map
-  .map { |key, durations| [key, (durations.sum / durations.size).round(3)] }
+  .map { |key, durations| [key, (durations.sum / durations.size).round(2)] }
   .to_h
 
 averages.each do |difficulty, average_time|

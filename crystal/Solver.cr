@@ -6,6 +6,7 @@ module Sudoku
     @@recursions = 0
 
     getter state : State
+    @shuffle_candidate_values : Bool
 
     protected property debug_output_enabled : Bool
     protected property debug_validation_enabled : Bool
@@ -13,21 +14,29 @@ module Sudoku
     protected property search_depth : Int32
     protected property nesting_depth = 0
 
+    protected def initialize(
+      @debug_output_enabled : Bool = false,
+      @debug_validation_enabled : Bool = false
+    )
+      @search_depth = 0
+      @shuffle_candidate_values = true
+
+      @state = State.new
+    end
+
     def initialize(
       filename : String,
-      debug_output_enabled : Bool = false,
-      debug_validation_enabled : Bool = false
+      @debug_output_enabled : Bool = false,
+      @debug_validation_enabled : Bool = false
     )
-      @debug_output_enabled = debug_output_enabled
-      @debug_validation_enabled = debug_validation_enabled
-
       @search_depth = 0
+      @shuffle_candidate_values = false
 
       @state = State.new
       @state.load_from_file(filename)
     end
 
-    def initialize(source : Solver)
+    protected def initialize(source : Solver)
       @@recursions += 1
 
       @debug_output_enabled = source.debug_output_enabled
@@ -35,7 +44,15 @@ module Sudoku
 
       @search_depth = source.search_depth + 1
 
+      @shuffle_candidate_values = source.@shuffle_candidate_values
+
       @state = State.new(source.state)
+    end
+
+    def self.generate
+      engine = Solver.new
+      engine.solve
+      engine.state
     end
 
     def log
@@ -96,7 +113,13 @@ module Sudoku
       seed_position = position_with_fewest_candidates
       seed_cell = @state.grid[seed_position]
 
-      seed_cell.candidate_values.each do |candidate_value|
+      candidate_values = if @shuffle_candidate_values
+                           seed_cell.candidate_values.shuffle
+                         else
+                           seed_cell.candidate_values
+                         end
+
+      candidate_values.each do |candidate_value|
         child = Solver.new(self)
         child.log { "guessing #{candidate_value} in #{seed_position}" }
         child.place(candidate_value, seed_position)
