@@ -1,0 +1,30 @@
+{
+  "name": "sudoku-engine-typescript",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": "github:tplorts/sudoku-engine",
+  "scripts": {
+    "solve": "node ./lib",
+    "go": "npm run build && npm run solve",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "npm run type-check -- --watch",
+    "build": "npm run build:types && npm run build:js",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:js": "babel src --out-dir lib --extensions \".ts,.tsx\" --source-maps inline"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.4.3",
+    "@babel/core": "^7.4.3",
+    "@babel/plugin-proposal-class-properties": "^7.4.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/fs-extra": "^5.0.5",
+    "@types/lodash": "^4.14.123",
+    "typescript": "^3.4.4"
+  },
+  "dependencies": {
+    "fs-extra": "^7.0.1",
+    "lodash": "^4.17.11"
+  }
+}
