@@ -36,6 +36,8 @@ export default class State {
     }
   }
 
+  toString = () => this.grid.toString();
+
   clone() {
     return new State(this);
   }

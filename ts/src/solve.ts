@@ -1,8 +1,6 @@
 import Solver from './Solver';
 
-const solver = new Solver('../puzzles/20190220c.sudoku', {
-  debugOutputEnabled: true,
-});
+const solver = new Solver('../puzzles/20190220c.sudoku');
 
 console.log('initial state');
 console.log(solver.state.grid.toVerboseString());

@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { ALL_VALUES, N } from './core';
+import Cell from './Cell';
 import GridPosition from './GridPosition';
 import { Block, LinearSection, Section } from './Sections';
 import State from './State';
@@ -7,11 +8,13 @@ import State from './State';
 export interface SolverOptions {
   debugOutputEnabled?: boolean;
   debugValidationEnabled?: boolean;
+  shuffleCandidateValues?: boolean;
 }
 
 const defaultOptions: SolverOptions = {
   debugOutputEnabled: false,
   debugValidationEnabled: false,
+  shuffleCandidateValues: false,
 };
 
 export default class Solver {
@@ -20,7 +23,11 @@ export default class Solver {
   private searchDepth = 0;
   private nestingDepth = 0;
 
-  constructor(filename: string, options = defaultOptions, source?: Solver) {
+  constructor(
+    filename: string | null,
+    options = defaultOptions,
+    source?: Solver
+  ) {
     this.options = {
       ...defaultOptions,
       ...options,
@@ -31,8 +38,18 @@ export default class Solver {
       this.searchDepth = source.searchDepth + 1;
     } else {
       this.state = new State();
-      this.state.loadFromFile(filename);
+      if (filename) {
+        this.state.loadFromFile(filename);
+      } else {
+        this.options.shuffleCandidateValues = true;
+      }
     }
+  }
+
+  static generate() {
+    const engine = new Solver(null);
+    engine.solve();
+    return engine.state;
   }
 
   clone() {
@@ -86,7 +103,7 @@ export default class Solver {
     const seedPosition = this.positionWithFewestCandidates();
     const seedCell = this.state.grid.cell(seedPosition);
 
-    for (const candidateValue of seedCell.candidateValues()) {
+    for (const candidateValue of this.getCandidateValues(seedCell)) {
       const child = this.clone();
 
       child.log(`guessing ${candidateValue} in ${seedPosition}`);
@@ -106,6 +123,11 @@ export default class Solver {
     }
 
     return null;
+  }
+
+  getCandidateValues(cell: Cell) {
+    const values = cell.candidateValues();
+    return this.options.shuffleCandidateValues ? _.shuffle(values) : values;
   }
 
   positionWithFewestCandidates() {
