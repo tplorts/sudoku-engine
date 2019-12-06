@@ -3,6 +3,11 @@
 Algorithm to solve & generate sudoku puzzles, with equivalent implementations in Crystal, C++, and TypeScript.  
 _(or at least as similar as I could make them)_
 
+See the readme in each implementation's directory for build & run instructions:
+- [Crystal](./crystal)
+- [C++](./cpp)
+- [TypeScript](./ts)
+
 ## Background
 
 I started this in early 2019 as a pet project for me to learn the [Crystal Language](https://crystal-lang.org/).  
