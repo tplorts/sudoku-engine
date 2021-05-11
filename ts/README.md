@@ -11,5 +11,5 @@ npm run build
 ## Run
 
 ```sh
-npm run solve
+npm run solve ../puzzles/20190220a.sudoku
 ```
